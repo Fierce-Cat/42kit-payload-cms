@@ -9,7 +9,7 @@ const Posts: CollectionConfig = {
     },
     {
       name: 'content',
-      type: 'rich-text', 
+      type: 'richtext', 
     },
   ],
 }
