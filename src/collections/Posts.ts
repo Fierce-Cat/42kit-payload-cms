@@ -7,10 +7,7 @@ const Posts: CollectionConfig = {
       name: 'title',
       type: 'text', 
     },
-    {
-      name: 'content',
-      type: 'richtext', 
-    },
+    richText(),
   ],
 }
 
