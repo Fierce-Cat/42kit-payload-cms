@@ -1,4 +1,7 @@
 import { CollectionConfig } from 'payload/types'
+import {
+  lexicalEditor
+} from '@payloadcms/richtext-lexical'
 
 const Posts: CollectionConfig = {
   slug: 'posts',
