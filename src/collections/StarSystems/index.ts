@@ -17,7 +17,7 @@ const StarSystems: CollectionConfig = {
   },
   fields: [
     {
-      name: 'name',
+      name: 'name', // 星系名称
       required: true,
       type: 'text', 
       localized: true,
