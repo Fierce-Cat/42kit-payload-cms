@@ -8,13 +8,14 @@ import { buildConfig } from 'payload/config'
 
 import Users from './collections/Users'
 import Posts from './collections/Posts'
+import StarSystems from './collections/StarSystems'
 
 export default buildConfig({
   admin: {
     user: Users.slug,
     bundler: webpackBundler(), // bundler-config
   },
-  collections: [Users, Posts],
+  collections: [Users, Posts, StarSystems],
   localization: {
     locales: [
       {
