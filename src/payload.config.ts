@@ -21,16 +21,16 @@ export default buildConfig({
       {
         label: {
           en: 'English',
-          'zh-cn': '英语', 
+          'zh-CN': '英语', 
         },
         code: 'en',
       },
       {
         label: {
           en: 'Simplified Chinese', 
-          'zh-cn': '简体中文',
+          'zh-CN': '简体中文',
         },
-        code: 'zh-cn',
+        code: 'zh-CN',
       },
     ],
     defaultLocale: 'zh-cn',
