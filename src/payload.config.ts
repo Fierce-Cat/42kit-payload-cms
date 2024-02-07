@@ -33,7 +33,7 @@ export default buildConfig({
         code: 'zh-CN',
       },
     ],
-    defaultLocale: 'zh-cn',
+    defaultLocale: 'zh-CN',
     fallback: true,
   },
   editor: lexicalEditor({}), // editor-config
