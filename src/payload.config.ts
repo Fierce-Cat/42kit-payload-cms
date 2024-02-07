@@ -15,6 +15,26 @@ export default buildConfig({
     bundler: webpackBundler(), // bundler-config
   },
   collections: [Users, Posts],
+  localization: {
+    locales: [
+      {
+        label: {
+          en: 'English',
+          'zh-cn': '英语', 
+        },
+        code: 'en',
+      },
+      {
+        label: {
+          en: 'Simplified Chinese', 
+          'zh-cn': '简体中文',
+        },
+        code: 'zh-cn',
+      },
+    ],
+    defaultLocale: 'zh-cn',
+    fallback: true,
+  },
   editor: lexicalEditor({}), // editor-config
   typescript: {
     outputFile: path.resolve(__dirname, 'payload-types.ts'),
