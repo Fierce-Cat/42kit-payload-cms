@@ -7,11 +7,11 @@ const StarSystems: CollectionConfig = {
   },
   labels: {
     singular: {
-      'zh-CN': '星系',
+      zh: '星系',
       en: 'Star System',
     },
     plural: {
-      'zh-CN': '星系',
+      zh: '星系',
       en: 'Star Systems',
     },
   },
@@ -22,7 +22,7 @@ const StarSystems: CollectionConfig = {
       type: 'text', 
       localized: true,
       label: {
-        'zh-CN': '名称',
+        zh: '名称',
         en: 'Name',
       },
     },

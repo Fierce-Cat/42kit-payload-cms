@@ -7,6 +7,7 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload/config'
 
 import Users from './collections/Users'
+import Admins from './collections/Admins'
 import Posts from './collections/Posts'
 import StarSystems from './collections/StarSystems'
 
@@ -15,25 +16,25 @@ export default buildConfig({
     user: Users.slug,
     bundler: webpackBundler(), // bundler-config
   },
-  collections: [Users, Posts, StarSystems],
+  collections: [Users, Admins, Posts, StarSystems],
   localization: {
     locales: [
       {
         label: {
           en: 'English',
-          'zh-CN': '英语', 
+          zh: '英语', 
         },
         code: 'en',
       },
       {
         label: {
           en: 'Simplified Chinese', 
-          'zh-CN': '简体中文',
+          zh: '简体中文',
         },
-        code: 'zh-CN',
+        code: 'zh',
       },
     ],
-    defaultLocale: 'zh-CN',
+    defaultLocale: 'zh',
     fallback: true,
   },
   editor: lexicalEditor({}), // editor-config
