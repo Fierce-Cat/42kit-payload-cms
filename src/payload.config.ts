@@ -1,7 +1,8 @@
 import path from 'path'
 
 import { payloadCloud } from '@payloadcms/plugin-cloud'
-import { mongooseAdapter } from '@payloadcms/db-mongodb' // database-adapter-import
+// import { mongooseAdapter } from '@payloadcms/db-mongodb' // database-adapter-import
+import { postgresAdapter } from '@payloadcms/db-postgres' // Switch to Postgres
 import { webpackBundler } from '@payloadcms/bundler-webpack' // bundler-import
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload/config'
@@ -46,8 +47,10 @@ export default buildConfig({
   },
   plugins: [payloadCloud()],
   // database-adapter-config-start
-  db: mongooseAdapter({
-    url: process.env.DATABASE_URI,
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URI,
+    }
   }),
   // database-adapter-config-end
 })
