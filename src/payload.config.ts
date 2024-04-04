@@ -74,7 +74,7 @@ export default buildConfig({
           sub: user.sub,
           name: user.name,
           email: user.email,
-          iss: process.env.DATABASE_URI,
+          iss: user.iss,
           username: user.username,
           // You can use OIDC user custom data to get the role for this app
           // role: user.custom_data?.my_app_role,
