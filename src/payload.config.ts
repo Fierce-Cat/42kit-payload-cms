@@ -1,14 +1,13 @@
 import path from 'path'
+import { oidcPlugin } from 'payload-plugin-oidc';
+import axios from 'axios'
 
-import { payloadCloud } from '@payloadcms/plugin-cloud'
-// import { mongooseAdapter } from '@payloadcms/db-mongodb' // database-adapter-import
-import { postgresAdapter } from '@payloadcms/db-postgres' // Switch to Postgres
+import { mongooseAdapter } from '@payloadcms/db-mongodb' // database-adapter-import
 import { webpackBundler } from '@payloadcms/bundler-webpack' // bundler-import
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload/config'
 
 import Users from './collections/Users'
-import Admins from './collections/Admins'
 import Posts from './collections/Posts'
 import StarSystems from './collections/StarSystems'
 
@@ -17,7 +16,7 @@ export default buildConfig({
     user: Users.slug,
     bundler: webpackBundler(), // bundler-config
   },
-  collections: [Users, Admins, Posts, StarSystems],
+  collections: [Users, Posts, StarSystems],
   localization: {
     locales: [
       {
@@ -45,12 +44,50 @@ export default buildConfig({
   graphQL: {
     schemaOutputFile: path.resolve(__dirname, 'generated-schema.graphql'),
   },
-  plugins: [payloadCloud()],
+  plugins: [
+    oidcPlugin({
+      clientID: process.env.OIDC_CLIENT_ID,
+      clientSecret: process.env.OIDC_CLIENT_SECRET,
+      authorizationURL: `${process.env.OIDC_URI}/oidc/auth`,
+      tokenURL: `${process.env.OIDC_URI}/oidc/token`,
+      initPath: `/oidc/signin`,
+      callbackPath: `/oidc/callback`,
+      callbackURL: `${process.env.SELF_URL}/oidc/callback`,
+      scope: 'openid offline_access profile email',
+      mongoUrl: process.env.DATABASE_URI,
+      userCollection: {
+        slug: Users.slug,
+        searchKey: 'sub',
+      },
+      createUserIfNotFound: true,
+      async userinfo(accessToken) {
+        const { data: user } = await axios.get(`${process.env.OIDC_URI}/oidc/me
+        `, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        console.log('OIDC User Info:', user);
+
+        return {
+          sub: user.sub,
+          name: user.name,
+          email: user.email,
+          iss: process.env.DATABASE_URI,
+          username: user.username,
+          // You can use OIDC user custom data to get the role for this app
+          // role: user.custom_data?.my_app_role,
+
+          // or you can do something like this
+          // role: user.custom_data?.role ? 'admin' : 'editor',
+        };
+      },
+    }),
+  ],
   // database-adapter-config-start
-  db: postgresAdapter({
-    pool: {
-      connectionString: process.env.DATABASE_URI,
-    }
+  db: mongooseAdapter({
+    url: process.env.DATABASE_URI,
   }),
   // database-adapter-config-end
 })
