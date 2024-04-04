@@ -30,8 +30,8 @@ async function updateLogtoUser(data: any) {
   if (!token) {
     throw new Error('Failed to get access token')
   }
-  console.log('Logto access token:', token.access_token)
-  console.log('updateOIDCUser', data.sub)
+  // console.log('Logto access token:', token.access_token)
+  // console.log('updateOIDCUser', data.sub)
   // We only update the user's name
   const res: any = await axios.patch(`https://42kit-logto.olisar.space/api/users/${data.sub}`, {
     name: data.name,
@@ -102,7 +102,7 @@ const Users: CollectionConfig = {
       admin: { hidden: true },
     },
     {
-      name: 'preferred_username',
+      name: 'username',
       type: 'text',
     },
     {

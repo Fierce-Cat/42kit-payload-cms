@@ -68,7 +68,7 @@ export default buildConfig({
           },
         });
 
-        console.log('OIDC User Info:', user);
+        // console.log('OIDC User Info:', user);
 
         return {
           sub: user.sub,
