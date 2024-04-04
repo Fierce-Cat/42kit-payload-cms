@@ -68,13 +68,13 @@ export default buildConfig({
           },
         });
 
-        // console.log('OIDC User Info:', user);
+        console.log('OIDC User Info:', user);
 
         return {
           sub: user.sub,
           name: user.name,
           email: user.email,
-          iss: user.iss,
+          iss: process.env.OIDC_URI,
           username: user.username,
           // You can use OIDC user custom data to get the role for this app
           // role: user.custom_data?.my_app_role,
