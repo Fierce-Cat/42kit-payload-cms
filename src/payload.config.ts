@@ -1,22 +1,58 @@
 import path from 'path'
-import { oidcPlugin } from 'payload-plugin-oidc';
 import axios from 'axios'
 
 import { mongooseAdapter } from '@payloadcms/db-mongodb' // database-adapter-import
 import { webpackBundler } from '@payloadcms/bundler-webpack' // bundler-import
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload/config'
+import { oidcPlugin } from 'payload-plugin-oidc';
+import { cloudStorage } from '@payloadcms/plugin-cloud-storage'
+import { s3Adapter } from '@payloadcms/plugin-cloud-storage/s3'
 
 import Users from './collections/Users'
 import Posts from './collections/Posts'
 import StarSystems from './collections/StarSystems'
+import Media from './collections/Media'
+
+const cloudflareR2 = s3Adapter({
+  config: {
+    endpoint: process.env.R2_ENDPOINT,
+    credentials: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+    },
+    region: process.env.R2_REGION,
+  },
+  bucket: process.env.R2_BUCKET,
+})
 
 export default buildConfig({
   admin: {
     user: Users.slug,
     bundler: webpackBundler(), // bundler-config
+    webpack: (config) => {
+      return {
+          ...config,
+          resolve: {
+              ...config.resolve,
+              alias: {
+                  ...config.resolve.alias,
+                  // publitio_js_sdk: path.resolve(__dirname, "../mock.js"),
+                  // "fs-extra": path.resolve(__dirname, "../mock.js"),
+              },
+              fallback: {
+                  ...config.resolve.fallback,
+                  fs: false,
+                  stream: false,
+                  constants: false,
+                  assert: false,
+                  util: false,
+              },
+          },
+      };
   },
-  collections: [Users, Posts, StarSystems],
+  },
+  collections: [Users, Posts, StarSystems, Media],
   localization: {
     locales: [
       {
@@ -68,8 +104,6 @@ export default buildConfig({
           },
         });
 
-        console.log('OIDC User Info:', user);
-
         return {
           sub: user.sub,
           name: user.name,
@@ -84,10 +118,20 @@ export default buildConfig({
         };
       },
     }),
+    cloudStorage({
+      collections: {
+        media: {
+          adapter: cloudflareR2,
+        },
+      }
+    }),
+    
   ],
   // database-adapter-config-start
   db: mongooseAdapter({
     url: process.env.DATABASE_URI,
   }),
-  // database-adapter-config-end
+  upload: {
+    defParamCharset: 'utf8',
+  }
 })
