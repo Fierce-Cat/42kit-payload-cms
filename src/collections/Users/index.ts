@@ -177,7 +177,6 @@ const Users: CollectionConfig = {
             {
               name: 'avatar',
               type: 'upload',
-              required: true,
               relationTo: 'media',
             },
           ],
