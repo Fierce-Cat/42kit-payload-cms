@@ -1,28 +1,37 @@
-import { CollectionConfig, CollectionBeforeValidateHook  ,CollectionBeforeChangeHook } from 'payload/types'
-import { v4 as uuidv4 } from 'uuid'
+import { CollectionConfig } from 'payload/types'
+import type { Access } from 'payload/config'
 
-const printFileInfo: CollectionBeforeValidateHook  = async ({ req, operation, data, originalDoc }) => {
-  console.log('printFileInfo')
-  console.log('req', req)
-  console.log('operation', operation)
-  console.log('data', data)
-  console.log('originalDoc', originalDoc)
-  return data
-}
+// Utilities
+import { generateId, generateCreatedBy } from '../utilities/GenerateMeta'
 
-const generateId: CollectionBeforeChangeHook = async ({ operation, data }) => {
-  if (operation === 'create') 
-  {
-    if(!data._id && !data.id) {
-      data._id = uuidv4()
-    }
+// Access Control
+import { isAdmin, isAdminFieldLevel } from '../access/isAdmin'
+import { isAdminOrSelf } from '../access/isAdminOrSelf'
+import { isUser, isUserFieldLevel } from '../access/isUser'
+
+const isCreator: Access = ({ req: { user } }) => {
+  return {
+    createdBy: {
+      equals: user.id,
+    },
   }
-  console.log('generateId', operation, data)
-  return data
 }
 
 const Media: CollectionConfig = {
   slug: 'media',
+  access: {
+    create: (req) => {
+      return isUser(req)
+    },
+    read: () => true,
+    update: (req) => {
+      return (isCreator(req) || isAdmin(req))
+
+    },
+    delete: (req) => {
+      return (isCreator(req) || isAdmin(req))
+    }
+  },
   upload: {
     staticURL: 'https://r2-citizencat-data.citizenwiki.cn/cms-assets',
     staticDir: 'media',
@@ -46,6 +55,12 @@ const Media: CollectionConfig = {
         height: undefined,
         position: 'centre',
       },
+      {
+        name: 'avatar',
+        width: 100,
+        height: 100,
+        position: 'centre',
+      }
     ],
     adminThumbnail: 'thumbnail',
     mimeTypes: ['image/*'],
@@ -60,10 +75,58 @@ const Media: CollectionConfig = {
       name: 'filename',
       type: 'text',
     },
+    {
+      name: 'createdBy',
+      type: 'relationship',
+      relationTo: 'users',
+      admin: {
+        readOnly: true,
+      },
+      access: {
+        create: () => false,
+        update: isAdminFieldLevel,
+      },
+    },
+    {
+      name: 'title',
+      type: 'text',
+    },
+    {
+      name: 'original',
+      type: 'checkbox',
+      defaultValue: false,
+    },
+    {
+      name: 'credit',
+      type: 'text',
+    },
+    {
+      name: 'source',
+      type: 'text',
+      defaultValue: '42Kit',
+    },
+    {
+      name: 'license',
+      type: 'select',
+      options: [
+        { label: 'RSI', value: 'RSI'},
+        { label: 'CC-BY', value: 'CC-BY' },
+        { label: 'CC-BY-SA', value: 'CC-BY-SA' },
+        { label: 'CC-BY-NC', value: 'CC-BY-NC' },
+        { label: 'CC-BY-NC-SA', value: 'CC-BY-NC-SA' },
+        { label: 'CC-BY-NC-ND', value: 'CC-BY-NC-ND' },
+        { label: 'CC0', value: 'CC0' },
+        { label: 'Public Domain', value: 'Public Domain' },
+        { label: 'All Rights Reserved', value: 'All Rights Reserved' },
+      ],
+    },
+    {
+      name: 'caption',
+      type: 'text',
+    },
   ],
   hooks: {
-    beforeValidate: [printFileInfo],
-    beforeChange: [generateId],
+    beforeChange: [generateId, generateCreatedBy],
   },
 }
 

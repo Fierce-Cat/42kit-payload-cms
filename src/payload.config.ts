@@ -5,14 +5,18 @@ import { mongooseAdapter } from '@payloadcms/db-mongodb' // database-adapter-imp
 import { webpackBundler } from '@payloadcms/bundler-webpack' // bundler-import
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload/config'
-import { oidcPlugin } from 'payload-plugin-oidc';
+import { oidcPlugin } from '@fiercecat/payload-plugin-oidc';
 import { cloudStorage } from '@payloadcms/plugin-cloud-storage'
 import { s3Adapter } from '@payloadcms/plugin-cloud-storage/s3'
 
 import Users from './collections/Users'
-import Posts from './collections/Posts'
-import StarSystems from './collections/StarSystems'
+// import Posts from './collections/Posts'
+// import StarSystems from './collections/StarSystems'
 import Media from './collections/Media'
+import Events from './collections/Events'
+import EventCategories from './collections/Event-Categories'
+import EventParticipants from './collections/Event-Participants'
+import EventOrganizers from './collections/Event-Organizers'
 
 const cloudflareR2 = s3Adapter({
   config: {
@@ -52,19 +56,32 @@ export default buildConfig({
       };
   },
   },
-  collections: [Users, Posts, StarSystems, Media],
+  collections: [
+    Users,
+    // Posts,
+    Events,
+    EventCategories,
+    EventParticipants,
+    EventOrganizers,
+    // StarSystems,
+    Media
+  ],
+  cors: [
+    '*',
+    'https://local-dev.citizenwiki.cn:3000',
+  ],
   localization: {
     locales: [
       {
         label: {
           en: 'English',
-          zh: '英语', 
+          zh: '英语',
         },
         code: 'en',
       },
       {
         label: {
-          en: 'Simplified Chinese', 
+          en: 'Simplified Chinese',
           zh: '简体中文',
         },
         code: 'zh',
@@ -76,6 +93,7 @@ export default buildConfig({
   editor: lexicalEditor({}), // editor-config
   typescript: {
     outputFile: path.resolve(__dirname, 'payload-types.ts'),
+    declare: false,
   },
   graphQL: {
     schemaOutputFile: path.resolve(__dirname, 'generated-schema.graphql'),
@@ -89,6 +107,8 @@ export default buildConfig({
       initPath: `/oidc/signin`,
       callbackPath: `/oidc/callback`,
       callbackURL: `${process.env.SELF_URL}/oidc/callback`,
+      redirectUriCookieName: `42kit_connect_redirect_url`,
+      connectPath: `/oidc/connect`,
       scope: 'openid offline_access profile email',
       mongoUrl: process.env.DATABASE_URI,
       userCollection: {
@@ -103,6 +123,8 @@ export default buildConfig({
             Authorization: `Bearer ${accessToken}`,
           },
         });
+
+        // console.log('userinfo', user);
 
         return {
           sub: user.sub,
@@ -125,7 +147,7 @@ export default buildConfig({
         },
       }
     }),
-    
+
   ],
   // database-adapter-config-start
   db: mongooseAdapter({
@@ -133,5 +155,5 @@ export default buildConfig({
   }),
   upload: {
     defParamCharset: 'utf8',
-  }
+  },
 })
