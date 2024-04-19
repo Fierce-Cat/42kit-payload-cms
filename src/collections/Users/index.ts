@@ -171,7 +171,7 @@ const Users: CollectionConfig = {
                 position: 'sidebar',
               },
               access: {
-                update: isAdminFieldLevel,
+                update: isAdminOrSelfFieldLevel,
               },
             },
             {
