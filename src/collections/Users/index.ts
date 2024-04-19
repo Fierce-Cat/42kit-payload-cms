@@ -1,7 +1,8 @@
-import payload from 'payload'
 import { CollectionConfig, CollectionBeforeChangeHook, CollectionAfterChangeHook  } from 'payload/types'
+import type { Access } from 'payload/config'
 import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
+
 
 import { isAdminOrSelf, isAdminOrSelfFieldLevel } from '../../access/isAdminOrSelf'
 import { isAdmin, isAdminFieldLevel } from '../../access/isAdmin'
@@ -48,6 +49,12 @@ async function updateLogtoUser(data: any) {
   })
 
   return res.data
+}
+
+const hasMediaId: Access = ({ id }) => {
+  if (!id)
+    return false
+  return true
 }
 
 const syncOidcUser: CollectionBeforeChangeHook = async ({ operation, data }) => {
@@ -97,7 +104,9 @@ const Users: CollectionConfig = {
     },
   },
   access: {
-    read: () => true,
+    read: (req) => {
+      return (hasMediaId(req) || isAdminOrSelf(req))
+    },
     create: isAdmin,
     update: isAdminOrSelf,
     delete: isAdmin,

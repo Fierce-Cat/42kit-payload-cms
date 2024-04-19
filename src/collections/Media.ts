@@ -6,10 +6,10 @@ import { generateId, generateCreatedBy } from '../utilities/GenerateMeta'
 
 // Access Control
 import { isAdmin, isAdminFieldLevel } from '../access/isAdmin'
-import { isAdminOrSelf } from '../access/isAdminOrSelf'
 import { isUser, isUserFieldLevel } from '../access/isUser'
 
 const isCreator: Access = ({ req: { user } }) => {
+  if (!user) return false
   return {
     createdBy: {
       equals: user.id,
@@ -17,13 +17,21 @@ const isCreator: Access = ({ req: { user } }) => {
   }
 }
 
+const hasMediaId: Access = ({ id }) => {
+  if (!id)
+    return false
+  return true
+}
+
 const Media: CollectionConfig = {
   slug: 'media',
   access: {
     create: (req) => {
-      return isUser(req)
+      return (isUser(req))
     },
-    read: () => true,
+    read: (req) => {
+      return (hasMediaId(req) || isAdmin(req) || isCreator(req))
+    },
     update: (req) => {
       return (isCreator(req) || isAdmin(req))
 
