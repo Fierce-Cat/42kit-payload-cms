@@ -69,6 +69,7 @@ export default buildConfig({
   cors: [
     '*',
     'https://local-dev.citizenwiki.cn:3000',
+    'https://42kit.citizenwiki.cn',
   ],
   localization: {
     locales: [
