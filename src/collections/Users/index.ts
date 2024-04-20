@@ -52,7 +52,8 @@ async function updateLogtoUser(data: any) {
   return res.data
 }
 
-const hasUserId: Access = ({ id }) => {
+const hasUserId: Access = ({ req, id }) => {
+  if (req.baseUrl !== '/api/users') return true
   if (!id)
     return false
   return true

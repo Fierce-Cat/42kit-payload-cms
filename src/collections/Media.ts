@@ -17,7 +17,8 @@ const isCreator: Access = ({ req: { user } }) => {
   }
 }
 
-const hasMediaId: Access = ({ id }) => {
+const hasMediaId: Access = ({req, id}) => {
+  if (req.baseUrl !== '/api/media') return true
   if (!id)
     return false
   return true
