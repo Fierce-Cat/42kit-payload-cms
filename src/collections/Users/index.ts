@@ -52,7 +52,7 @@ async function updateLogtoUser(data: any) {
   return res.data
 }
 
-const hasMediaId: Access = ({ id }) => {
+const hasUserId: Access = ({ id }) => {
   if (!id)
     return false
   return true
@@ -136,7 +136,7 @@ const Users: CollectionConfig = {
   },
   access: {
     read: (req) => {
-      return (hasMediaId(req) || isAdminOrSelf(req))
+      return (hasUserId(req) || isAdminOrSelf(req))
     },
     create: isAdmin,
     update: isAdminOrSelf,
