@@ -16,7 +16,6 @@ const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation }) 
   if (operation !== 'create') {
     return doc
   }
-  console.log('addEventOrganizer', doc)
   const event = await payload.findByID({
     collection: 'events',
     id: doc.event_id,
@@ -41,7 +40,6 @@ const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation }) 
 }
 
 const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, id }) => {
-  console.log('removeEventOrganizer', doc)
 
   const event = await payload.findByID({
     collection: 'events',
