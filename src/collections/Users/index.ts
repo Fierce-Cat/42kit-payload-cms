@@ -14,7 +14,7 @@ async function getM2MToken() {
   const clientSecret = process.env.LOGTO_CLIENT_SECRET
   const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
 
-  const res: any = await axios.post('https://42kit-logto.olisar.space/oidc/token', {
+  const res: any = await axios.post(`${process.env.OIDC_URI}/oidc/token`, {
     grant_type: 'client_credentials',
     resource: 'https://default.logto.app/api',
     scope: 'all openid',
@@ -38,7 +38,8 @@ async function updateLogtoUser(data: any) {
   // console.log('Logto access token:', token.access_token)
   // console.log('updateOIDCUser', data.sub)
   // We only update the user's name
-  const res: any = await axios.patch(`https://42kit-logto.olisar.space/api/users/${data.sub}`, {
+  const res: any = await axios.patch(`${process.env.OIDC_URI}/api/users/${data.sub}`, {
+    username: data.username,
     name: data.name,
   }, {
     headers: {
@@ -92,28 +93,63 @@ const syncOidcUser: CollectionBeforeChangeHook = async ({ operation, data }) => 
   return data
 }
 
+const getLogtoUsernameAval = async (username: string) => {
+  // Get Logto access token
+  const token = await getM2MToken()
+  if (!token) {
+    throw new Error('Failed to get access token')
+  }
+
+  const query = new URLSearchParams([
+    ['search.username', username],
+    ['mode.name', 'exact'],
+  ]);
+
+  console.log('getLogtoUsernameAval', `${process.env.OIDC_URI}/api/users/?${query}`)
+
+  const res: any = await axios.get(`${process.env.OIDC_URI}/api/users/?${query}`, {
+    headers: {
+      Authorization: `Bearer ${token.access_token}`,
+      "Content-Type": "application/json",
+    },
+  }).catch((err) => {
+    return null
+  })
+
+  return res.data
+
+
+}
+
 const getUsernameAval = async (req: PayloadRequest) => {
   if (!req.user) {
     //  only allow logged in user to check username
     return false
   }
-  const username = req.body.username
-  if (!username) {
+  const usernameStr = req.body.username
+  if (!usernameStr) {
     // invalid username
     return false
   }
+
+  // check if username exists in Payload
   const res: any = await payload.find({
     collection: 'users',
     where: {
       username: {
-        equals: username,
+        equals: usernameStr,
       },
     },
   }).catch((err) => {
-    console.error(err)
     return false
   })
   if (res.totalDocs > 0) {
+    return false
+  }
+
+  // check if username exists in Logto
+  const logtoRes = await getLogtoUsernameAval(usernameStr)
+  if (logtoRes && logtoRes.length > 0) {
     return false
   }
   return true
