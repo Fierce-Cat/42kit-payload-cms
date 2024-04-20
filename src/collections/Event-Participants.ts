@@ -93,13 +93,23 @@ const checkUserParticipation: CollectionBeforeValidateHook = async ({
     }
   })
 
-  console.log(participant)
-
   if (participant.totalDocs > 0) {
-    throw new APIError('You have already registered for this event', 400)
+    throw new APIError('You have already registered for this event.', 400)
   }
 }
 
+  return data
+}
+
+// Check if the posting user_id is the same as the logged in user
+const checkIsCurrentUser: CollectionBeforeValidateHook = async ({
+  data, // incoming data to update or create with'
+  req: { user },
+}) => {
+  if (data.user_id !== user.id) {
+    // throw new Forbidden
+    throw new APIError('You can only register event for yourself.', 403)
+  }
   return data
 }
 
@@ -109,6 +119,18 @@ const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
   }
   return {
     'event_id.createdBy': {
+      equals: user.id,
+    },
+  }
+}
+
+const isCreatedBy: Access = ({ req: { user } }) => {
+  if (!user)
+  {
+    return false
+  }
+  return {
+    createdBy: {
       equals: user.id,
     },
   }
@@ -129,11 +151,13 @@ const EventParticipants: CollectionConfig = {
   access: {
     create: isUser,
     read: () => true,
-    update: isUser,
+    update: (req) => {
+      return (isCreatedBy(req) || isEventCreatorOrAdmin(req))
+    },
     delete: isEventCreatorOrAdmin,
   },
   hooks: {
-    beforeValidate: [checkEventStatus, checkUserParticipation],
+    beforeValidate: [checkEventStatus, checkUserParticipation, checkIsCurrentUser],
     beforeChange: [generateId, generateCreatedBy],
     afterChange: [countParticipants],
   },

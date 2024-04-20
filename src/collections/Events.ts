@@ -38,7 +38,7 @@ const isOrganizer: Access< any, User > = ({req: {user}, id}) => {
   })
 }
 
-const isCreator: Access = ({ req: { user } }) => {
+const isCreatedBy: Access = ({ req: { user } }) => {
   if (!user)
   {
     return false
@@ -56,7 +56,7 @@ const eventReadAccess: Access = (req) => {
   {
     return true
   }
-  if (isCreator(req))
+  if (isCreatedBy(req))
   {
     return true
   }
@@ -78,7 +78,7 @@ const eventCreateAccess: Access = (req) => {
 
 // 允许管理员、活动创建者和组织者更新活动
 const eventUpdateAccess: Access = (req) => {
-  return (isAdmin(req) || isCreator(req) || isOrganizer(req))
+  return (isAdmin(req) || isCreatedBy(req) || isOrganizer(req))
 }
 
 

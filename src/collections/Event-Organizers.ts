@@ -1,5 +1,11 @@
 import payload from 'payload'
-import type { CollectionConfig, CollectionAfterChangeHook, CollectionAfterDeleteHook } from 'payload/types'
+import type {
+  CollectionConfig,
+  CollectionAfterChangeHook,
+  CollectionAfterDeleteHook,
+  CollectionBeforeValidateHook
+} from 'payload/types'
+import { APIError } from 'payload/errors'
 import { generateId } from '../utilities/GenerateMeta'
 import type { Access } from 'payload/config'
 import type { User, Event } from '../payload-types'
@@ -42,7 +48,6 @@ const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, id }) => {
     id: doc.event_id.id,
   }) as unknown as Event;
 
-  console.log('event', event.organizers)
   let organizerIds = []
 
   // event.organizers is an array of objects, but after we delete an organizer, the original object will become a string, so we need to check the type of the object, if it's an object, we push the id to the organizerIds array
@@ -51,8 +56,6 @@ const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, id }) => {
       organizerIds.push(organizer.id)
     }
   })
-
-  console.log('organizerIds', organizerIds)
 
   payload.update({
     collection: 'events',
@@ -63,6 +66,42 @@ const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, id }) => {
   })
 
   return doc
+}
+
+const checkOrganizerRecord: CollectionBeforeValidateHook = async ({
+  data, // incoming data to update or create with'
+  operation, // 'create' or 'update'
+}) => {
+  if (operation === 'create') {
+  const organizer = await payload.find({
+    collection: 'event-organizers',
+    where: {
+      event_id: {
+        equals: data.event_id,
+      },
+      user_id: {
+        equals: data.user_id,
+      }
+    }
+  })
+
+  if (organizer.totalDocs > 0) {
+    throw new APIError('You have already assigned this user for this event', 400)
+  }
+}
+
+  return data
+}
+
+const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
+  if (isAdmin) {
+    return true
+  }
+  return {
+    'event_id.createdBy': {
+      equals: user.id,
+    },
+  }
 }
 
 const EventOrganizers: CollectionConfig = {
@@ -79,9 +118,12 @@ const EventOrganizers: CollectionConfig = {
   },
   access: {
     read: () => true,
+    create: isEventCreatorOrAdmin,
+    update: isEventCreatorOrAdmin,
     delete: isAdmin,
   },
   hooks: {
+    beforeValidate: [checkOrganizerRecord],
     afterChange: [addEventOrganizer],
     beforeChange: [generateId],
     afterDelete: [removeEventOrganizer],

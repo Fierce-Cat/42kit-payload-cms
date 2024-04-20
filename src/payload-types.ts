@@ -44,7 +44,7 @@ export interface User {
   username?: string | null;
   name?: string | null;
   roles: ('admin' | 'editor' | 'user')[];
-  avatar: string | Media;
+  avatar?: string | Media | null;
   rsi_handle?: string | null;
   rsi_verified?: boolean | null;
   rsi_verified_at?: string | null;
@@ -240,4 +240,9 @@ export interface PayloadMigration {
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+
+
+declare module 'payload' {
+  export interface GeneratedTypes extends Config {}
 }
