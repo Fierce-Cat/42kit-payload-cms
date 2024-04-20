@@ -1,4 +1,5 @@
-import { CollectionConfig, CollectionBeforeChangeHook, CollectionAfterChangeHook  } from 'payload/types'
+import payload from 'payload'
+import { CollectionConfig, CollectionBeforeChangeHook, PayloadRequest  } from 'payload/types'
 import type { Access } from 'payload/config'
 import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
@@ -68,6 +69,9 @@ const syncOidcUser: CollectionBeforeChangeHook = async ({ operation, data }) => 
       data.sub = data.sub // 同步外部标识
       data.external_provider = data.iss // 同步外部提供者
     }
+    if (!data.avatar) {
+      data.avatar = process.env.DEFAULT_AVATAR || null
+    }
   }
   if(operation === 'update')
   {
@@ -85,6 +89,33 @@ const syncOidcUser: CollectionBeforeChangeHook = async ({ operation, data }) => 
     }
   }
   return data
+}
+
+const getUsernameAval = async (req: PayloadRequest) => {
+  if (!req.user) {
+    //  only allow logged in user to check username
+    return false
+  }
+  const username = req.body.username
+  if (!username) {
+    // invalid username
+    return false
+  }
+  const res: any = await payload.find({
+    collection: 'users',
+    where: {
+      username: {
+        equals: username,
+      },
+    },
+  }).catch((err) => {
+    console.error(err)
+    return false
+  })
+  if (res.totalDocs > 0) {
+    return false
+  }
+  return true
 }
 
 const Users: CollectionConfig = {
@@ -260,6 +291,20 @@ const Users: CollectionConfig = {
   hooks: {
     beforeChange: [syncOidcUser],
   },
+  endpoints: [
+    {
+      // check if username is available
+      path: '/checkUsername',
+      method: 'post',
+      handler: async (req, res) => {
+        const aval = await getUsernameAval(req)
+        if (aval)
+          res.status(200).json({ message: 'Username is available' })
+        else
+          res.status(400).json({ message: 'Username is not available' })
+      },
+    }
+  ]
 }
 
 export default Users
