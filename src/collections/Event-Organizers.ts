@@ -4,6 +4,8 @@ import { generateId } from '../utilities/GenerateMeta'
 import type { Access } from 'payload/config'
 import type { User, Event } from '../payload-types'
 
+import { isAdmin } from '../access/isAdmin'
+
 const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation }) => {
   if (operation !== 'create') {
     return doc
@@ -77,6 +79,7 @@ const EventOrganizers: CollectionConfig = {
   },
   access: {
     read: () => true,
+    delete: isAdmin,
   },
   hooks: {
     afterChange: [addEventOrganizer],
