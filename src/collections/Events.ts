@@ -10,7 +10,6 @@ import { isAdminOrSelf } from '../access/isAdminOrSelf'
 import { isUser } from '../access/isUser'
 
 const isOrganizer: Access< any, User > = ({req: {user}, id}) => {
-  console.log(user)
   if (!user)
   {
     return false
@@ -29,7 +28,6 @@ const isOrganizer: Access< any, User > = ({req: {user}, id}) => {
       }
     }
   }).then((organizers) => {
-    console.log(organizers)
     if (organizers.totalDocs > 0)
     {
       return true

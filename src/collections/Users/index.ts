@@ -128,8 +128,6 @@ const getLogtoUsernameAval = async (username: string) => {
     ['mode.name', 'exact'],
   ]);
 
-  console.log('getLogtoUsernameAval', `${process.env.OIDC_URI}/api/users/?${query}`)
-
   const res: any = await axios.get(`${process.env.OIDC_URI}/api/users/?${query}`, {
     headers: {
       Authorization: `Bearer ${token.access_token}`,
