@@ -1,4 +1,4 @@
-import { CollectionConfig } from 'payload/types'
+import { CollectionConfig, CollectionBeforeOperationHook } from 'payload/types'
 import type { Access } from 'payload/config'
 
 // Utilities
@@ -22,6 +22,15 @@ const hasMediaId: Access = ({req, id}) => {
   if (!id)
     return false
   return true
+}
+
+// Hooks
+const generateAltName: CollectionBeforeOperationHook = async ({ args }) => {
+  const files = args.req?.files;
+  if (files && files.file && files.file.name) {
+    const parts = files.file.name.split('.');
+    files.file.name = `${(Math.random() + 1).toString(36).substring(2)}.${parts[parts.length - 1]}`;
+  }
 }
 
 const Media: CollectionConfig = {
@@ -135,6 +144,7 @@ const Media: CollectionConfig = {
     },
   ],
   hooks: {
+    beforeOperation: [generateAltName],
     beforeChange: [generateId, generateCreatedBy],
   },
 }

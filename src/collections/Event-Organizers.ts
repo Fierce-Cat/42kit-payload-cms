@@ -18,7 +18,7 @@ const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation }) 
   }
   const event = await payload.findByID({
     collection: 'events',
-    id: doc.event_id,
+    id: doc.event_id.id,
   }) as unknown as Event;
 
   if (!event.organizers) {
@@ -92,6 +92,10 @@ const checkOrganizerRecord: CollectionBeforeValidateHook = async ({
 }
 
 const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
+  if (!user)
+  {
+    return false
+  }
   if (isAdmin) {
     return true
   }

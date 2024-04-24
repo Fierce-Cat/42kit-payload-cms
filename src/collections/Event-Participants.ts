@@ -71,6 +71,10 @@ const checkEventStatus: CollectionBeforeValidateHook = async ({
     if (event.is_registration_open !== true) {
       throw new Forbidden
     }
+
+    if (event.max_participants !== 0 && event.num_participants >= event.max_participants) {
+      throw new Forbidden
+    }
   }
 
   return data
@@ -114,6 +118,10 @@ const checkIsCurrentUser: CollectionBeforeValidateHook = async ({
 }
 
 const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
+  if (!user)
+  {
+    return false
+  }
   if (isAdmin) {
     return true
   }
@@ -136,6 +144,16 @@ const isCreatedBy: Access = ({ req: { user } }) => {
   }
 }
 
+const participantsReadAccess: Access = (req) => {
+  if (isEventCreatorOrAdmin(req)) return true
+
+  return {
+    "event_id.show_participants": {
+      equals: true,
+    },
+  }
+}
+
 const EventParticipants: CollectionConfig = {
   slug: 'event-participants',
   labels: {
@@ -150,7 +168,7 @@ const EventParticipants: CollectionConfig = {
   },
   access: {
     create: isUser,
-    read: () => true,
+    read: participantsReadAccess,
     update: (req) => {
       return (isCreatedBy(req) || isEventCreatorOrAdmin(req))
     },

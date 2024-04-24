@@ -1,5 +1,6 @@
 import payload from 'payload'
 import { CollectionConfig, CollectionBeforeChangeHook, PayloadRequest  } from 'payload/types'
+import type { Media, User } from '../../payload-types'
 import type { Access } from 'payload/config'
 import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
@@ -55,6 +56,7 @@ async function updateLogtoUser(data: any) {
 
 const hasUserId: Access = ({ req, id }) => {
   if (req.baseUrl !== '/api/users') return true
+  if (req.query && req.query.where) return true
   if (!id)
     return false
   return true
@@ -91,6 +93,27 @@ const syncOidcUser: CollectionBeforeChangeHook = async ({ operation, data }) => 
     }
   }
   return data
+}
+
+const updateAvatarUrl: CollectionBeforeChangeHook = async ({ data }) => {
+  if (data.avatar && typeof data.avatar == 'string') {
+    // If the avatar is not a media object, it's an id
+    await payload.findByID({
+      collection: 'media',
+      id: data.avatar,
+    }).then((media) => {
+      data.avatar_url = (media as unknown as Media).sizes.avatar.url
+    })
+  } else if (data.avatar && typeof data.avatar == 'object'){
+    await payload.findByID({
+      collection: 'media',
+      id: data.avatar.id,
+    }).then((media) => {
+      data.avatar_url = (media as unknown as Media).sizes.avatar.url
+    })
+  }
+  return data
+
 }
 
 const getLogtoUsernameAval = async (username: string) => {
@@ -256,6 +279,11 @@ const Users: CollectionConfig = {
               type: 'upload',
               relationTo: 'media',
             },
+            {
+              name: 'avatar_url',
+              type: 'text',
+              admin: { hidden: true },
+            },
           ],
         },
         // Basic Tab End
@@ -326,7 +354,7 @@ const Users: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeChange: [syncOidcUser],
+    beforeChange: [syncOidcUser, updateAvatarUrl],
   },
   endpoints: [
     {

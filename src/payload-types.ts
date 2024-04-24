@@ -27,6 +27,8 @@ export interface Config {
     'event-categories': EventCategory;
     'event-participants': EventParticipant;
     'event-organizers': EventOrganizer;
+    'event-contest-records': EventContestRecord;
+    'event-contest-scores': EventContestScore;
     media: Media;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -45,6 +47,7 @@ export interface User {
   name?: string | null;
   roles: ('admin' | 'editor' | 'user')[];
   avatar?: string | Media | null;
+  avatar_url?: string | null;
   rsi_handle?: string | null;
   rsi_verified?: boolean | null;
   rsi_verified_at?: string | null;
@@ -166,6 +169,17 @@ export interface Event {
   is_online?: boolean | null;
   is_registration_open?: boolean | null;
   is_contest?: boolean | null;
+  contest_type?: ('photographyContest' | 'racing' | 'other') | null;
+  is_all_records_public: boolean;
+  score_schema?:
+    | {
+        name: string;
+        min?: number | null;
+        max?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  num_max_attempts: number;
   updatedAt: string;
   createdAt: string;
 }
@@ -209,6 +223,60 @@ export interface EventParticipant {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-contest-records".
+ */
+export interface EventContestRecord {
+  id: string;
+  createdBy: string | User;
+  event_id: string | Event;
+  user_id: string | User;
+  status: 'submitted' | 'published' | 'rejected';
+  is_validated: boolean;
+  is_auto_validated?: boolean | null;
+  validatedBy?: (string | null) | User;
+  validatedAt?: string | null;
+  is_featured: boolean;
+  race: {
+    position: number;
+    time?: string | null;
+    score: number;
+    is_scoreable: boolean;
+    is_winner: boolean;
+    file?: string | Media | null;
+    video_bilibili_url?: string | null;
+    note?: string | null;
+    scoredBy?: (string | User)[] | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-contest-scores".
+ */
+export interface EventContestScore {
+  id: string;
+  createdBy: string | User;
+  event_id: string | Event;
+  event_contest_record_id: string | EventContestRecord;
+  score_info: {
+    total: number;
+    score_schema?:
+      | {
+          name: string;
+          min?: number | null;
+          max?: number | null;
+          score: number;
+          id?: string | null;
+        }[]
+      | null;
+    comment?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
@@ -240,9 +308,4 @@ export interface PayloadMigration {
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
-}
-
-
-declare module 'payload' {
-  export interface GeneratedTypes extends Config {}
 }

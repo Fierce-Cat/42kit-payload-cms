@@ -17,6 +17,8 @@ import Events from './collections/Events'
 import EventCategories from './collections/Event-Categories'
 import EventParticipants from './collections/Event-Participants'
 import EventOrganizers from './collections/Event-Organizers'
+import EventContestRecords from './collections/Event-ContestRecords'
+import EventContestScores from './collections/Event-ContestScores'
 
 const cloudflareR2 = s3Adapter({
   config: {
@@ -63,6 +65,8 @@ export default buildConfig({
     EventCategories,
     EventParticipants,
     EventOrganizers,
+    EventContestRecords,
+    EventContestScores,
     // StarSystems,
     Media
   ],

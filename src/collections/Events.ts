@@ -137,6 +137,9 @@ const Events: CollectionConfig = {
       },
     },
   ],
+  versions: {
+    drafts: false,
+  },
   fields: [
     {
       name: 'id',
@@ -539,6 +542,92 @@ const Events: CollectionConfig = {
               },
               type: 'checkbox',
               defaultValue: false,
+            },
+            {
+              name: 'contest_type',
+              label: {
+                zh: '比赛类型',
+                en: 'Contest Type',
+              },
+              type: 'select',
+              options: [
+                {
+                  label: {
+                    zh: '摄影比赛',
+                    en: 'Photography Contest',
+                  },
+                  value: 'photographyContest',
+                },
+                {
+                  label: {
+                    zh: '竞速',
+                    en: 'Racing',
+                  },
+                  value: 'racing',
+                },
+                {
+                  label: {
+                    zh: '其他',
+                    en: 'Other',
+                  },
+                  value: 'other',
+                },
+              ],
+            },
+            {
+              name: 'is_all_records_public',
+              label: {
+                zh: '公开所有记录',
+                en: 'Public All Records',
+              },
+              type: 'checkbox',
+              defaultValue: false,
+              required: true,
+            },
+            {
+              name: 'score_schema',
+              label: {
+                zh: '评分标准',
+                en: 'Score Schema',
+              },
+              type: 'array',
+              fields: [
+                {
+                  name: 'name',
+                  label: {
+                    zh: '名称',
+                    en: 'Name',
+                  },
+                  type: 'text',
+                  required: true,
+                },
+                {
+                  name: 'min',
+                  label: {
+                    zh: '最小值',
+                    en: 'Min',
+                  },
+                  type: 'number',
+                },
+                {
+                  name: 'max',
+                  label: {
+                    zh: '最大值',
+                    en: 'Max',
+                  },
+                  type: 'number',
+                },
+              ]
+            },
+            {
+              name: 'num_max_attempts',
+              label: {
+                zh: '最大尝试次数',
+                en: 'Max Attempts',
+              },
+              type: 'number',
+              defaultValue: 1,
+              required: true,
             }
           ]
         }
