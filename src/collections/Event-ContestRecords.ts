@@ -16,11 +16,36 @@ const ranking: CollectionAfterChangeHook = async ({
   return doc
 }
 
-const updateValidation: CollectionBeforeValidateHook = async ({
+const checkNumSubmissions: CollectionBeforeValidateHook = async ({
   data,
   operation,
   req: { user },
 }) => {
+  if (operation === 'create') {
+    const records = await payload.find({
+      collection: 'event-contest-records',
+      where: {
+        event_id: {
+          equals: data.event_id,
+        },
+        user_id: {
+          equals: user.id,
+        },
+      }
+    }) as any
+
+    const event = await payload.findByID({
+      collection: 'events',
+      id: data.event_id,
+    }) as any
+
+    if (records.totalDocs >= event.num_max_attempts) {
+      throw new APIError('You have reached the maximum number of submissions.', 403)
+    }
+
+    return data
+  }
+
   return data
 }
 
@@ -109,18 +134,37 @@ const isCreatedBy: Access = ({ req: { user } }) => {
 
 const recordReadAccess: Access = (req) => {
   if (isEventCreatorOrAdmin(req)) return true
+  if (isCreatedBy(req)) return true
 
   return {
-    and: [
+    or: [
       {
-        status: {
-          in: ['submitted', 'published'],
-        },
+        and: [
+          {
+            status: {
+              in: ['submitted', 'published'],
+            },
+          },
+          {
+            "event_id.is_all_records_public": {
+              equals: true,
+            },
+          }
+        ]
       },
       {
-        "event_id.is_all_records_public": {
-          equals: true,
-        },
+        and: [
+          {
+            status: {
+              in: ['published'],
+            },
+          },
+          {
+            "event_id.is_all_records_public": {
+              equals: false,
+            },
+          }
+        ]
       }
     ]
   }
@@ -147,9 +191,9 @@ const EventContestRecords: CollectionConfig = {
     delete: isEventCreatorOrAdmin,
   },
   hooks: {
-    beforeValidate: [checkEventStatus],
+    beforeValidate: [checkEventStatus, checkNumSubmissions],
     beforeChange: [generateCreatedBy],
-    afterChange: [ranking, updateValidation],
+    afterChange: [ranking],
   },
   fields: [
     {
@@ -314,7 +358,7 @@ const EventContestRecords: CollectionConfig = {
             en: 'Scoreable',
           },
           type: 'checkbox',
-          defaultValue: false,
+          defaultValue: true,
           required: true,
         },
         {

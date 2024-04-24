@@ -10,6 +10,7 @@ import { isAdminOrSelf } from '../access/isAdminOrSelf'
 import { isUser } from '../access/isUser'
 
 const isOrganizer: Access< any, User > = ({req: {user}, id}) => {
+  console.log(user)
   if (!user)
   {
     return false
@@ -28,6 +29,7 @@ const isOrganizer: Access< any, User > = ({req: {user}, id}) => {
       }
     }
   }).then((organizers) => {
+    console.log(organizers)
     if (organizers.totalDocs > 0)
     {
       return true
@@ -78,7 +80,19 @@ const eventCreateAccess: Access = (req) => {
 
 // 允许管理员、活动创建者和组织者更新活动
 const eventUpdateAccess: Access = (req) => {
-  return (isAdmin(req) || isCreatedBy(req) || isOrganizer(req))
+  if (isAdmin(req))
+  {
+    return true
+  }
+  if (isCreatedBy(req))
+  {
+    return true
+  }
+  if (isOrganizer(req))
+  {
+    return true
+  }
+  return false
 }
 
 
@@ -573,6 +587,7 @@ const Events: CollectionConfig = {
                   value: 'other',
                 },
               ],
+              defaultValue: 'other',
             },
             {
               name: 'is_all_records_public',

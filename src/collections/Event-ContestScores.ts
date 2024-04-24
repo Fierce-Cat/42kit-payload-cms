@@ -167,11 +167,9 @@ const EventContestScores: CollectionConfig = {
     },
   },
   access: {
-    create: isUser,
+    create: isEventCreatorOrAdmin,
     read: () => true,
-    update: (req) => {
-      return (isEventCreatorOrAdmin(req))
-    },
+    update: isEventCreatorOrAdmin,
     delete: isEventCreatorOrAdmin,
   },
   hooks: {
