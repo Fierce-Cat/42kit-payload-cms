@@ -155,9 +155,9 @@ export default buildConfig({
 
   ],
   rateLimit: {
-    window: 450000,
-    max: 500,
-    trustProxy: false,
+    window: 120000,
+    max: 300,
+    trustProxy: true,
   },
   // database-adapter-config-start
   db: mongooseAdapter({
