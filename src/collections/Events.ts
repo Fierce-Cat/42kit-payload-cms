@@ -630,7 +630,8 @@ const Events: CollectionConfig = {
                   },
                   type: 'number',
                 },
-              ]
+              ],
+              defaultValue: [],
             },
             {
               name: 'num_max_attempts',
