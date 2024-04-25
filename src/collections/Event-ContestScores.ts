@@ -16,11 +16,38 @@ const ranking: CollectionAfterChangeHook = async ({
   return doc
 }
 
-const updateValidation: CollectionBeforeValidateHook = async ({
+const checkExistRecord: CollectionBeforeValidateHook = async ({
   data,
   operation,
   req: { user },
 }) => {
+  if (operation === 'create') {
+    const record = await payload.findByID({
+      collection: 'event-contest-records',
+      id: data.event_contest_record_id,
+    })
+
+    if (!record) {
+      throw new APIError('Record not found.', 404)
+    }
+
+    const score = await payload.find({
+      collection: 'event-contest-scores',
+      where: {
+        event_contest_record_id: {
+          equals: data.event_contest_record_id,
+        },
+        createdBy: {
+          equals: user.id,
+        }
+      }
+    })
+
+    if (score.totalDocs > 0) {
+      throw new APIError('You have already scored this record.', 403)
+    }
+  }
+
   return data
 }
 
@@ -173,7 +200,7 @@ const EventContestScores: CollectionConfig = {
     delete: isEventCreatorOrAdmin,
   },
   hooks: {
-    beforeValidate: [checkEventStatus],
+    beforeValidate: [checkEventStatus, checkExistRecord],
     beforeChange: [generateCreatedBy],
     afterChange: [updateRecordScore],
   },
