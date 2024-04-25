@@ -154,6 +154,11 @@ export default buildConfig({
     }),
 
   ],
+  rateLimit: {
+    window: 450000,
+    max: 500,
+    trustProxy: true,
+  },
   // database-adapter-config-start
   db: mongooseAdapter({
     url: process.env.DATABASE_URI,
