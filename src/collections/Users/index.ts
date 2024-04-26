@@ -199,6 +199,9 @@ const Users: CollectionConfig = {
     create: isAdmin,
     update: isAdminOrSelf,
     delete: isAdmin,
+    admin: ({ req: { user } }) => {
+      return user && user.roles.includes('admin')
+    },
   },
   fields: [
     {
