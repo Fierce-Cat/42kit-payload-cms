@@ -12,11 +12,12 @@ import type { User, Event } from '../payload-types'
 
 import { isAdmin } from '../access/isAdmin'
 
-const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation }) => {
+const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation, req }) => {
   if (operation !== 'create') {
     return doc
   }
-  const event = await payload.findByID({
+  const event = await req.payload.findByID({
+    req,
     collection: 'events',
     id: doc.event_id.id,
   }) as unknown as Event;
@@ -28,7 +29,8 @@ const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation }) 
   const organizerIds = event.organizers.map((organizer: any) => organizer.id)
   organizerIds.push(doc.id)
 
-  await payload.update({
+  await req.payload.update({
+    req,
     collection: 'events',
     id: event.id,
     data: {
@@ -39,9 +41,10 @@ const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation }) 
   return doc
 }
 
-const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, id }) => {
+const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, id, req }) => {
 
-  const event = await payload.findByID({
+  const event = await req.payload.findByID({
+    req,
     collection: 'events',
     id: doc.event_id.id,
   }) as unknown as Event;
@@ -55,7 +58,8 @@ const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, id }) => {
     }
   })
 
-  payload.update({
+  await req.payload.update({
+    req,
     collection: 'events',
     id: event.id,
     data: {
@@ -69,9 +73,11 @@ const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, id }) => {
 const checkOrganizerRecord: CollectionBeforeValidateHook = async ({
   data, // incoming data to update or create with'
   operation, // 'create' or 'update'
+  req,
 }) => {
   if (operation === 'create') {
-  const organizer = await payload.find({
+  const organizer = await req.payload.find({
+    req,
     collection: 'event-organizers',
     where: {
       event_id: {
@@ -96,9 +102,9 @@ const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
   {
     return false
   }
-  if (isAdmin) {
-    return true
-  }
+  // if (isAdmin) {
+  //   return true
+  // }
   return {
     'event_id.createdBy': {
       equals: user.id,
@@ -122,7 +128,7 @@ const EventOrganizers: CollectionConfig = {
     read: () => true,
     create: isEventCreatorOrAdmin,
     update: isEventCreatorOrAdmin,
-    delete: isAdmin,
+    delete: isEventCreatorOrAdmin,
   },
   hooks: {
     beforeValidate: [checkOrganizerRecord],

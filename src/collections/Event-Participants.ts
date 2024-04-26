@@ -12,10 +12,12 @@ import { isAdmin } from '../access/isAdmin'
 const countParticipants: CollectionAfterChangeHook = async ({
   doc,
   operation,
+  req,
 }) => {
   if (operation === 'create') {
     // Count the number of participants in the event
-    await payload.find({
+    await req.payload.find({
+      req,
       collection: 'event-participants',
       where: {
         event_id: {
@@ -23,7 +25,8 @@ const countParticipants: CollectionAfterChangeHook = async ({
         }
       }
     }).then((participants) => {
-      payload.update({
+      req.payload.update({
+        req,
         collection: 'events',
         id: doc.event_id.id ?? doc.event_id,
         data: {
@@ -33,7 +36,8 @@ const countParticipants: CollectionAfterChangeHook = async ({
     })
   } else if (operation === 'update') {
     // Count the number of participants in the event
-    await payload.find({
+    await req.payload.find({
+      req,
       collection: 'event-participants',
       where: {
         event_id: {
@@ -41,7 +45,8 @@ const countParticipants: CollectionAfterChangeHook = async ({
         }
       }
     }).then((participants) => {
-      payload.update({
+      req.payload.update({
+        req,
         collection: 'events',
         id: doc.event_id.id ?? doc.event_id,
         data: {
@@ -74,6 +79,10 @@ const checkEventStatus: CollectionBeforeValidateHook = async ({
 
     if (event.max_participants !== 0 && event.num_participants >= event.max_participants) {
       throw new Forbidden
+    }
+
+    if (new Date(event.date_ended as string) < new Date()) {
+      throw new APIError('Event has ended.', 400)
     }
   }
 

@@ -54,14 +54,17 @@ const checkExistRecord: CollectionBeforeValidateHook = async ({
 const updateRecordScore: CollectionAfterChangeHook  = async ({
   doc,
   operation,
+  req,
 }) => {
   if (operation === 'create') {
-    const record = await payload.findByID({
+    const record = await req.payload.findByID({
+      req,
       collection: 'event-contest-records',
       id: doc.event_contest_record_id,
     }) as any
 
-    const scores = await payload.find({
+    const scores = await req.payload.find({
+      req,
       collection: 'event-contest-scores',
       where: {
         event_contest_record_id: {
@@ -69,8 +72,6 @@ const updateRecordScore: CollectionAfterChangeHook  = async ({
         }
       }
     })
-
-    console.log(scores)
 
     let total = 0
     scores.docs.forEach((score: any) => {
@@ -88,10 +89,9 @@ const updateRecordScore: CollectionAfterChangeHook  = async ({
 
     scoredBy.push(doc.createdBy)
 
-    console.log(doc.event_contest_record_id)
-
     record.score = total
-    payload.update({
+    await req.payload.update({
+      req,
       collection: 'event-contest-records',
       id: doc.event_contest_record_id,
       data: {
