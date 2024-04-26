@@ -106,7 +106,7 @@ const Events: CollectionConfig = {
     delete: isAdminOrSelf,
   },
   hooks: {
-    beforeChange: [generateId, generateCreatedBy, generateRandomSlug],
+    beforeChange: [generateCreatedBy, generateRandomSlug],
   },
   labels: {
     singular: {
@@ -153,11 +153,6 @@ const Events: CollectionConfig = {
     drafts: false,
   },
   fields: [
-    {
-      name: 'id',
-      type: 'text',
-      admin: { hidden: true },
-    },
     {
       name: 'createdBy',
       label: {

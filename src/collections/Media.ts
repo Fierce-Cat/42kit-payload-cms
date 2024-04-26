@@ -85,11 +85,6 @@ const Media: CollectionConfig = {
   },
   fields: [
     {
-      name: 'id',
-      type: 'text',
-      admin: { hidden: true },
-    },
-    {
       name: 'filename',
       type: 'text',
     },
@@ -145,7 +140,7 @@ const Media: CollectionConfig = {
   ],
   hooks: {
     beforeOperation: [generateAltName],
-    beforeChange: [generateId, generateCreatedBy],
+    beforeChange: [generateCreatedBy],
   },
 }
 

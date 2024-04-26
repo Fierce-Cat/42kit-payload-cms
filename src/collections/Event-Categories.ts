@@ -33,11 +33,6 @@ const EventCategories: CollectionConfig = {
   },
   fields: [
     {
-      name: 'id',
-      type: 'text',
-      admin: { hidden: true },
-    },
-    {
       name: 'name',
       label: {
         zh: '名称',
@@ -58,7 +53,7 @@ const EventCategories: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeChange: [generateId],
+    beforeChange: [],
   },
 }
 

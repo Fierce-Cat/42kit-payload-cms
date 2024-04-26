@@ -176,15 +176,10 @@ const EventParticipants: CollectionConfig = {
   },
   hooks: {
     beforeValidate: [checkEventStatus, checkUserParticipation, checkIsCurrentUser],
-    beforeChange: [generateId, generateCreatedBy],
+    beforeChange: [generateCreatedBy],
     afterChange: [countParticipants],
   },
   fields: [
-    {
-      name: 'id',
-      type: 'text',
-      admin: { hidden: true },
-    },
     {
       name: 'createdBy',
       label: {

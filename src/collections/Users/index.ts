@@ -66,15 +66,16 @@ const syncOidcUser: CollectionBeforeChangeHook = async ({ operation, data }) => 
   // console.log('syncOidcUser', operation, data)
   if (operation === 'create')
   {
-    if(!data._id && !data.id) {
-      data._id = uuidv4()
-    }
     if (!data.external_identifier && data.sub) {
       data.sub = data.sub // 同步外部标识
       data.external_provider = data.iss // 同步外部提供者
     }
-    if (!data.avatar) {
-      data.avatar = process.env.DEFAULT_AVATAR || null
+    // if (!data.avatar) {
+    //   data.avatar = process.env.DEFAULT_AVATAR || null
+    // }
+    console.log(data.roles)
+    if (!data.roles) {
+      data.roles = ['user']
     }
   }
   if(operation === 'update')
@@ -88,7 +89,6 @@ const syncOidcUser: CollectionBeforeChangeHook = async ({ operation, data }) => 
     }
     if (data.sub)
     {
-      // console.log('updateLogtoUser', data)
       await updateLogtoUser(data)
     }
   }
@@ -202,11 +202,6 @@ const Users: CollectionConfig = {
   },
   fields: [
     {
-      name: 'id',
-      type: 'text',
-      admin: { hidden: true },
-    },
-    {
       name: 'sub',
       type: 'text',
       admin: { hidden: true },
@@ -264,7 +259,7 @@ const Users: CollectionConfig = {
                   value: 'user',
                 },
               ],
-              defaultValue: 'user',
+              defaultValue: ['user'],
               admin: {
                 position: 'sidebar',
               },

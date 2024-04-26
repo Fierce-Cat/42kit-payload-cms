@@ -4,9 +4,12 @@ import { v4 as uuidv4 } from 'uuid'
 export const generateId: CollectionBeforeChangeHook = async ({ req, operation, data }) => {
   if (operation === 'create')
   {
-    if(!data._id && !data.id) {
-      data._id = uuidv4()
-    }
+    // if(!data.id && !data.id) {
+    //   data.id = uuidv4()
+    // }
+    // @Fierce-Cat: UUID is not a good choice for the id field, because it's too long.
+    // We replace this with a snowflake id generator.
+
   }
   return data
 }

@@ -127,15 +127,10 @@ const EventOrganizers: CollectionConfig = {
   hooks: {
     beforeValidate: [checkOrganizerRecord],
     afterChange: [addEventOrganizer],
-    beforeChange: [generateId],
+    beforeChange: [],
     afterDelete: [removeEventOrganizer],
   },
   fields: [
-    {
-      name: 'id',
-      type: 'text',
-      admin: { hidden: true },
-    },
     {
       name: 'event_id',
       label: {
