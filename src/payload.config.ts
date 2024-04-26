@@ -172,5 +172,5 @@ export default buildConfig({
   upload: {
     defParamCharset: 'utf8',
   },
-  debug: true,
+  debug: process.env.DEBUG_MODE === 'true',
 })
