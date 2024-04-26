@@ -20,7 +20,6 @@
     "@aws-sdk/lib-storage": "^3.549.0",
     "@fiercecat/payload-plugin-oidc": "^1.46.0",
     "@payloadcms/bundler-webpack": "^1.0.6",
-    "@payloadcms/db-mongodb": "^1.0.0",
     "@payloadcms/db-postgres": "^0.8.2",
     "@payloadcms/plugin-cloud": "^3.0.0",
     "@payloadcms/plugin-cloud-storage": "^1.1.2",

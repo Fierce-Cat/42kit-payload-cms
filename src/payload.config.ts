@@ -1,7 +1,6 @@
 import path from 'path'
 import axios from 'axios'
 
-import { mongooseAdapter } from '@payloadcms/db-mongodb' // database-adapter-import
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { webpackBundler } from '@payloadcms/bundler-webpack' // bundler-import
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
