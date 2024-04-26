@@ -70,10 +70,9 @@ const syncOidcUser: CollectionBeforeChangeHook = async ({ operation, data }) => 
       data.sub = data.sub // 同步外部标识
       data.external_provider = data.iss // 同步外部提供者
     }
-    // if (!data.avatar) {
-    //   data.avatar = process.env.DEFAULT_AVATAR || null
-    // }
-    console.log(data.roles)
+    if (!data.avatar) {
+      data.avatar = process.env.DEFAULT_AVATAR || null
+    }
     if (!data.roles) {
       data.roles = ['user']
     }
