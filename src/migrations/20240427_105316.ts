@@ -84,13 +84,13 @@ END $$;
 
 CREATE TABLE IF NOT EXISTS "users_roles" (
 	"order" integer NOT NULL,
-	"parent_id" uuid NOT NULL,
+	"parent_id" varchar NOT NULL,
 	"value" "enum_users_roles",
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "users" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"id" varchar PRIMARY KEY NOT NULL,
 	"sub" varchar,
 	"external_provider" varchar,
 	"username" varchar,
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS "users" (
 CREATE TABLE IF NOT EXISTS "users_rels" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"order" integer,
-	"parent_id" uuid NOT NULL,
+	"parent_id" varchar NOT NULL,
 	"path" varchar NOT NULL,
 	"media_id" uuid
 );
@@ -170,7 +170,7 @@ CREATE TABLE IF NOT EXISTS "events_rels" (
 	"order" integer,
 	"parent_id" uuid NOT NULL,
 	"path" varchar NOT NULL,
-	"users_id" uuid,
+	"users_id" varchar,
 	"event_categories_id" uuid,
 	"media_id" uuid,
 	"event_organizers_id" uuid
@@ -232,7 +232,7 @@ CREATE TABLE IF NOT EXISTS "_events_v_rels" (
 	"parent_id" uuid NOT NULL,
 	"path" varchar NOT NULL,
 	"events_id" uuid,
-	"users_id" uuid,
+	"users_id" varchar,
 	"event_categories_id" uuid,
 	"media_id" uuid,
 	"event_organizers_id" uuid
@@ -268,7 +268,7 @@ CREATE TABLE IF NOT EXISTS "event_participants_rels" (
 	"order" integer,
 	"parent_id" uuid NOT NULL,
 	"path" varchar NOT NULL,
-	"users_id" uuid,
+	"users_id" varchar,
 	"events_id" uuid
 );
 
@@ -286,7 +286,7 @@ CREATE TABLE IF NOT EXISTS "event_organizers_rels" (
 	"parent_id" uuid NOT NULL,
 	"path" varchar NOT NULL,
 	"events_id" uuid,
-	"users_id" uuid
+	"users_id" varchar
 );
 
 CREATE TABLE IF NOT EXISTS "event_contest_records" (
@@ -312,7 +312,7 @@ CREATE TABLE IF NOT EXISTS "event_contest_records_rels" (
 	"order" integer,
 	"parent_id" uuid NOT NULL,
 	"path" varchar NOT NULL,
-	"users_id" uuid,
+	"users_id" varchar,
 	"events_id" uuid,
 	"media_id" uuid
 );
@@ -340,7 +340,7 @@ CREATE TABLE IF NOT EXISTS "event_contest_scores_rels" (
 	"order" integer,
 	"parent_id" uuid NOT NULL,
 	"path" varchar NOT NULL,
-	"users_id" uuid,
+	"users_id" varchar,
 	"events_id" uuid,
 	"event_contest_records_id" uuid
 );
@@ -392,7 +392,7 @@ CREATE TABLE IF NOT EXISTS "media_rels" (
 	"order" integer,
 	"parent_id" uuid NOT NULL,
 	"path" varchar NOT NULL,
-	"users_id" uuid
+	"users_id" varchar
 );
 
 CREATE TABLE IF NOT EXISTS "payload_preferences" (
@@ -408,7 +408,7 @@ CREATE TABLE IF NOT EXISTS "payload_preferences_rels" (
 	"order" integer,
 	"parent_id" uuid NOT NULL,
 	"path" varchar NOT NULL,
-	"users_id" uuid
+	"users_id" varchar
 );
 
 CREATE TABLE IF NOT EXISTS "payload_migrations" (

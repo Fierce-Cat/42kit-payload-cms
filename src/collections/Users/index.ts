@@ -1,5 +1,6 @@
 import payload from 'payload'
-import { CollectionConfig, CollectionBeforeChangeHook, PayloadRequest  } from 'payload/types'
+import { CollectionConfig, CollectionBeforeValidateHook, CollectionBeforeChangeHook, PayloadRequest, CollectionBeforeDeleteHook } from 'payload/types'
+import { sql } from 'drizzle-orm'
 import type { Media, User } from '../../payload-types'
 import type { Access } from 'payload/config'
 import { v4 as uuidv4 } from 'uuid'
@@ -36,8 +37,6 @@ async function updateLogtoUser(data: any) {
   if (!token) {
     throw new Error('Failed to get access token')
   }
-  // console.log('Logto access token:', token.access_token)
-  // console.log('updateOIDCUser', data.sub)
   // We only update the user's name
   const res: any = await axios.patch(`${process.env.OIDC_URI}/api/users/${data.sub}`, {
     username: data.username,
@@ -62,6 +61,19 @@ const hasUserId: Access = ({ req, id }) => {
   return true
 }
 
+const syncUserId: CollectionBeforeValidateHook = async ({ data }) => {
+  if (!data.id) {
+    if (data.sub) {
+      data.id = data.sub
+      data._id = data.sub
+    } else {
+      data.id = uuidv4()
+      data._id = data.id
+    }
+  }
+  return data
+}
+
 const syncOidcUser: CollectionBeforeChangeHook = async ({ operation, data }) => {
   // console.log('syncOidcUser', operation, data)
   if (operation === 'create')
@@ -70,7 +82,7 @@ const syncOidcUser: CollectionBeforeChangeHook = async ({ operation, data }) => 
       data.sub = data.sub // 同步外部标识
       data.external_provider = data.iss // 同步外部提供者
     }
-    if (!data.avatar) {
+    if (!data.avatar && process.env.DEFAULT_AVATAR) {
       data.avatar = process.env.DEFAULT_AVATAR || null
     }
     if (!data.roles) {
@@ -175,6 +187,13 @@ const getUsernameAval = async (req: PayloadRequest) => {
   return true
 }
 
+const deleteUserRoles: CollectionBeforeDeleteHook = async ({ req, id }) => {
+  req.payload.db.drizzle.execute(sql`
+  DELETE FROM users_roles WHERE parent_id = ${id}
+  `)
+}
+
+
 const Users: CollectionConfig = {
   slug: 'users',
   auth: true,
@@ -197,12 +216,17 @@ const Users: CollectionConfig = {
     },
     create: isAdmin,
     update: isAdminOrSelf,
-    delete: isAdmin,
+    delete: () => false,
     admin: ({ req: { user } }) => {
       return user && user.roles.includes('admin')
     },
   },
   fields: [
+    {
+      name: 'id',
+      type: 'text',
+      required: true,
+    },
     {
       name: 'sub',
       type: 'text',
@@ -349,7 +373,9 @@ const Users: CollectionConfig = {
     },
   ],
   hooks: {
+    beforeValidate: [syncUserId],
     beforeChange: [syncOidcUser, updateAvatarUrl],
+    beforeDelete: [deleteUserRoles],
   },
   endpoints: [
     {

@@ -1,5 +1,5 @@
 {
-  "id": "a216a869-b668-4bb2-868e-893464336970",
+  "id": "0d659278-e276-4fd7-afd5-657f4b3ac0bf",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -16,7 +16,7 @@
         },
         "parent_id": {
           "name": "parent_id",
-          "type": "uuid",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
@@ -74,10 +74,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "varchar",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "sub": {
           "name": "sub",
@@ -235,7 +234,7 @@
         },
         "parent_id": {
           "name": "parent_id",
-          "type": "uuid",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
@@ -664,7 +663,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "uuid",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
@@ -1184,7 +1183,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "uuid",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
@@ -1527,7 +1526,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "uuid",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
@@ -1692,7 +1691,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "uuid",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         }
@@ -1905,7 +1904,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "uuid",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
@@ -2164,7 +2163,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "uuid",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
@@ -2581,7 +2580,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "uuid",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         }
@@ -2728,7 +2727,7 @@
         },
         "users_id": {
           "name": "users_id",
-          "type": "uuid",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         }
