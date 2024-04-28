@@ -1,59 +1,19 @@
-import payload from 'payload'
-import { CollectionConfig, CollectionBeforeValidateHook, CollectionBeforeChangeHook, PayloadRequest, CollectionBeforeDeleteHook } from 'payload/types'
-import { sql } from 'drizzle-orm'
-import type { Media, User } from '../../payload-types'
 import type { Access } from 'payload/config'
-import { v4 as uuidv4 } from 'uuid'
-import axios from 'axios'
+import type { CollectionBeforeChangeHook, CollectionBeforeDeleteHook, CollectionConfig, PayloadRequest } from 'payload/types'
 
+import { sql } from 'drizzle-orm'
+import payload from 'payload'
 
-import { isAdminOrSelf, isAdminOrSelfFieldLevel } from '../../access/isAdminOrSelf'
+import type { Media } from '../../payload-types'
+
 import { isAdmin, isAdminFieldLevel } from '../../access/isAdmin'
+import { isAdminOrSelf, isAdminOrSelfFieldLevel } from '../../access/isAdminOrSelf'
+import { getLogtoUsernameAvaliable } from './functions/logtoHelpers'
+import { checkUsername } from './hooks/checkUsername'
+import { syncLogtoUser } from './hooks/syncLogtoUser'
+import { syncUserId } from './hooks/syncUserId'
 
-async function getM2MToken() {
-  // use basic authentication with client_id and client_secret to get access token
-  const clientId = process.env.LOGTO_CLIENT_ID
-  const clientSecret = process.env.LOGTO_CLIENT_SECRET
-  const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
-
-  const res: any = await axios.post(`${process.env.OIDC_URI}/oidc/token`, {
-    grant_type: 'client_credentials',
-    resource: 'https://default.logto.app/api',
-    scope: 'all openid',
-  }, {
-    headers: {
-      Authorization: `Basic ${basicAuth}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-  }).catch((err) => {
-    return null
-  })
-  return res.data
-}
-
-async function updateLogtoUser(data: any) {
-  // Get Logto access token
-  const token = await getM2MToken()
-  if (!token) {
-    throw new Error('Failed to get access token')
-  }
-  // We only update the user's name
-  const res: any = await axios.patch(`${process.env.OIDC_URI}/api/users/${data.sub}`, {
-    username: data.username,
-    name: data.name,
-  }, {
-    headers: {
-      Authorization: `Bearer ${token.access_token}`,
-      "Content-Type": "application/json",
-    },
-  }).catch((err) => {
-    return null
-  })
-
-  return res.data
-}
-
-const hasUserId: Access = ({ req, id }) => {
+const hasUserId: Access = ({ id, req }) => {
   if (req.baseUrl !== '/api/users') return true
   if (req.query && req.query.where) return true
   if (!id)
@@ -61,95 +21,24 @@ const hasUserId: Access = ({ req, id }) => {
   return true
 }
 
-const syncUserId: CollectionBeforeValidateHook = async ({ data }) => {
-  if (!data.id) {
-    if (data.sub) {
-      data.id = data.sub
-      data._id = data.sub
-    } else {
-      data.id = uuidv4()
-      data._id = data.id
-    }
-  }
-  return data
-}
-
-const syncOidcUser: CollectionBeforeChangeHook = async ({ operation, data }) => {
-  // console.log('syncOidcUser', operation, data)
-  if (operation === 'create')
-  {
-    if (!data.external_identifier && data.sub) {
-      data.sub = data.sub // 同步外部标识
-      data.external_provider = data.iss // 同步外部提供者
-    }
-    if (!data.avatar && process.env.DEFAULT_AVATAR) {
-      data.avatar = process.env.DEFAULT_AVATAR || null
-    }
-    if (!data.roles) {
-      data.roles = ['user']
-    }
-  }
-  if(operation === 'update')
-  {
-    // console.log('debug: update')
-    if (!data.external_provider && data.sub) {
-      // console.log('debug: no external_identifier')
-      data.sub = data.sub // 同步外部标识
-      data.external_provider = data.iss // 同步外部提供者
-      return data
-    }
-    if (data.sub)
-    {
-      await updateLogtoUser(data)
-    }
-  }
-  return data
-}
-
 const updateAvatarUrl: CollectionBeforeChangeHook = async ({ data }) => {
   if (data.avatar && typeof data.avatar == 'string') {
     // If the avatar is not a media object, it's an id
     await payload.findByID({
-      collection: 'media',
       id: data.avatar,
+      collection: 'media',
     }).then((media) => {
       data.avatar_url = (media as unknown as Media).sizes.avatar.url
     })
   } else if (data.avatar && typeof data.avatar == 'object'){
     await payload.findByID({
-      collection: 'media',
       id: data.avatar.id,
+      collection: 'media',
     }).then((media) => {
       data.avatar_url = (media as unknown as Media).sizes.avatar.url
     })
   }
   return data
-
-}
-
-const getLogtoUsernameAval = async (username: string) => {
-  // Get Logto access token
-  const token = await getM2MToken()
-  if (!token) {
-    throw new Error('Failed to get access token')
-  }
-
-  const query = new URLSearchParams([
-    ['search.username', username],
-    ['mode.name', 'exact'],
-  ]);
-
-  const res: any = await axios.get(`${process.env.OIDC_URI}/api/users/?${query}`, {
-    headers: {
-      Authorization: `Bearer ${token.access_token}`,
-      "Content-Type": "application/json",
-    },
-  }).catch((err) => {
-    return null
-  })
-
-  return res.data
-
 
 }
 
@@ -165,30 +54,33 @@ const getUsernameAval = async (req: PayloadRequest) => {
   }
 
   // check if username exists in Payload
-  const res: any = await payload.find({
-    collection: 'users',
-    where: {
-      username: {
-        equals: usernameStr,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const res: any = await req.payload
+    .find({
+      collection: 'users',
+      where: {
+        username: {
+          equals: usernameStr,
+        },
       },
-    },
-  }).catch((err) => {
-    return false
-  })
+    })
+    .catch(() => {
+      return false
+    })
   if (res.totalDocs > 0) {
     return false
   }
 
   // check if username exists in Logto
-  const logtoRes = await getLogtoUsernameAval(usernameStr)
-  if (logtoRes && logtoRes.length > 0) {
+  const logtoRes = await getLogtoUsernameAvaliable(usernameStr)
+  if (!logtoRes) {
     return false
   }
   return true
 }
 
-const deleteUserRoles: CollectionBeforeDeleteHook = async ({ req, id }) => {
-  req.payload.db.drizzle.execute(sql`
+const deleteDBUserRoles: CollectionBeforeDeleteHook = async ({ id, req }) => {
+  await req.payload.db.drizzle.execute(sql`
   DELETE FROM users_roles WHERE parent_id = ${id}
   `)
 }
@@ -196,31 +88,36 @@ const deleteUserRoles: CollectionBeforeDeleteHook = async ({ req, id }) => {
 
 const Users: CollectionConfig = {
   slug: 'users',
-  auth: true,
-  admin: {
-    useAsTitle: 'email',
-  },
-  labels: {
-    singular: {
-      zh: '用户',
-      en: 'User',
-    },
-    plural: {
-      zh: '用户',
-      en: 'Users',
-    },
-  },
   access: {
-    read: (req) => {
-      return (hasUserId(req) || isAdminOrSelf(req))
-    },
-    create: isAdmin,
-    update: isAdminOrSelf,
-    delete: () => false,
     admin: ({ req: { user } }) => {
       return user && user.roles.includes('admin')
     },
+    create: isAdmin,
+    delete: () => false,
+    read: (req) => {
+      return (hasUserId(req) || isAdminOrSelf(req))
+    },
+    update: isAdminOrSelf,
   },
+  admin: {
+    defaultColumns: ['username', 'name', 'id', 'roles'],
+    useAsTitle: 'name',
+  },
+  auth: true,
+  endpoints: [
+    {
+      // check if username is available
+      handler: async (req, res) => {
+        const aval = await getUsernameAval(req)
+        if (aval)
+          res.status(200).json({ message: 'Username is available' })
+        else
+          res.status(400).json({ message: 'Username is not available' })
+      },
+      method: 'post',
+      path: '/checkUsername',
+    }
+  ],
   fields: [
     {
       name: 'id',
@@ -242,10 +139,6 @@ const Users: CollectionConfig = {
       tabs: [
         // Basic Tab Start
         {
-          label: {
-            zh: '基础',
-            en: 'Basic',
-          },
           fields: [
             {
               name: 'username',
@@ -259,8 +152,13 @@ const Users: CollectionConfig = {
             {
               name: 'roles', // required
               type: 'select', // required
-              required: true,
-              saveToJWT: true,
+              access: {
+                update: isAdminFieldLevel,
+              },
+              admin: {
+                position: 'sidebar',
+              },
+              defaultValue: ['user'],
               hasMany: true,
               options: [
                 {
@@ -285,13 +183,8 @@ const Users: CollectionConfig = {
                   value: 'user',
                 },
               ],
-              defaultValue: ['user'],
-              admin: {
-                position: 'sidebar',
-              },
-              access: {
-                update: isAdminFieldLevel,
-              },
+              required: true,
+              saveToJWT: true,
             },
             {
               name: 'avatar',
@@ -304,46 +197,42 @@ const Users: CollectionConfig = {
               admin: { hidden: true },
             },
           ],
+          label: {
+            en: 'Basic',
+            zh: '基础',
+          },
         },
         // Basic Tab End
         // RSI Tab Start
         {
-          label: {
-            zh: 'RSI关联',
-            en: 'RSI',
-          },
           fields: [
             {
               name: 'rsi_handle',
-              label: {
-                zh: 'RSI 用户名',
-                en: 'RSI Handle',
-              },
               type: 'text',
               access: {
                 read: isAdminOrSelfFieldLevel,
                 update: isAdminFieldLevel,
               },
+              label: {
+                en: 'RSI Handle',
+                zh: 'RSI 用户名',
+              },
             },
             {
               name: 'rsi_verified',
-              label: {
-                zh: 'RSI 验证',
-                en: 'RSI Verified',
-              },
               type: 'checkbox',
-              defaultValue: false,
               access: {
                 read: isAdminOrSelfFieldLevel,
                 update: isAdminFieldLevel,
               },
+              defaultValue: false,
+              label: {
+                en: 'RSI Verified',
+                zh: 'RSI 验证',
+              },
             },
             {
               name: 'rsi_verified_at',
-              label: {
-                zh: 'RSI 验证时间',
-                en: 'RSI Verified At',
-              },
               type: 'date',
               access: {
                 read: isAdminOrSelfFieldLevel,
@@ -353,44 +242,48 @@ const Users: CollectionConfig = {
                 date: {
                   pickerAppearance: 'dayAndTime',
                 },
+              },
+              label: {
+                en: 'RSI Verified At',
+                zh: 'RSI 验证时间',
               }
             },
             {
               name: 'rsi_verification_code',
-              label: {
-                zh: 'RSI 验证码',
-                en: 'RSI Verification Code',
-              },
               type: 'text',
               access: {
                 read: isAdminOrSelfFieldLevel,
                 update: isAdminFieldLevel,
               },
+              label: {
+                en: 'RSI Verification Code',
+                zh: 'RSI 验证码',
+              },
             }
           ],
+          label: {
+            en: 'RSI',
+            zh: 'RSI关联',
+          },
         },
       ],
     },
   ],
   hooks: {
-    beforeValidate: [syncUserId],
-    beforeChange: [syncOidcUser, updateAvatarUrl],
-    beforeDelete: [deleteUserRoles],
+    beforeChange: [syncLogtoUser, updateAvatarUrl],
+    beforeDelete: [deleteDBUserRoles],
+    beforeValidate: [syncUserId, checkUsername],
   },
-  endpoints: [
-    {
-      // check if username is available
-      path: '/checkUsername',
-      method: 'post',
-      handler: async (req, res) => {
-        const aval = await getUsernameAval(req)
-        if (aval)
-          res.status(200).json({ message: 'Username is available' })
-        else
-          res.status(400).json({ message: 'Username is not available' })
-      },
-    }
-  ]
+  labels: {
+    plural: {
+      en: 'Users',
+      zh: '用户',
+    },
+    singular: {
+      en: 'User',
+      zh: '用户',
+    },
+  }
 }
 
 export default Users
