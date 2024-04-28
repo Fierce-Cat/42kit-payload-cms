@@ -9,3 +9,5 @@
 **/node_modules
 **/temp
 **/docs/**
+**/payload-types.ts
+

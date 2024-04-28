@@ -1,20 +1,21 @@
-import payload from 'payload'
-import { Forbidden, APIError } from 'payload/errors'
-import type { Access } from 'payload/config'
-import type { CollectionConfig, CollectionAfterChangeHook, CollectionBeforeValidateHook } from 'payload/types'
+import type { Access } from 'payload/config';
+import type {
+  CollectionAfterChangeHook,
+  CollectionBeforeValidateHook,
+  CollectionConfig,
+} from 'payload/types';
 
-import { generateId, generateCreatedBy } from '../utilities/GenerateMeta'
+import payload from 'payload';
+import { APIError, Forbidden } from 'payload/errors';
 
-import { isUser } from '../access/isUser'
-import { isAdmin } from '../access/isAdmin'
+import { isAdmin } from '../access/isAdmin';
+import { isUser } from '../access/isUser';
+import { generateCreatedBy } from '../utilities/GenerateMeta';
 
 // Count the number of participants in the event
-const ranking: CollectionAfterChangeHook = async ({
-  doc,
-  operation,
-}) => {
-  return doc
-}
+const ranking: CollectionAfterChangeHook = ({ doc }) => {
+  return doc;
+};
 
 const checkNumSubmissions: CollectionBeforeValidateHook = async ({
   data,
@@ -22,7 +23,7 @@ const checkNumSubmissions: CollectionBeforeValidateHook = async ({
   req: { user },
 }) => {
   if (operation === 'create') {
-    const records = await payload.find({
+    const records = (await payload.find({
       collection: 'event-contest-records',
       where: {
         event_id: {
@@ -31,23 +32,25 @@ const checkNumSubmissions: CollectionBeforeValidateHook = async ({
         user_id: {
           equals: user.id,
         },
-      }
-    }) as any
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    })) as any;
 
-    const event = await payload.findByID({
-      collection: 'events',
+    const event = (await payload.findByID({
       id: data.event_id,
-    }) as any
+      collection: 'events',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    })) as any;
 
     if (records.totalDocs >= event.num_max_attempts) {
-      throw new APIError('You have reached the maximum number of submissions.', 403)
+      throw new APIError('You have reached the maximum number of submissions.', 403);
     }
 
-    return data
+    return data;
   }
 
-  return data
-}
+  return data;
+};
 
 // Check if the event is published and registration is open
 const checkEventStatus: CollectionBeforeValidateHook = async ({
@@ -56,85 +59,83 @@ const checkEventStatus: CollectionBeforeValidateHook = async ({
 }) => {
   if (operation === 'create') {
     const event = await payload.findByID({
-      collection: 'events',
       id: data.event_id,
-    })
+      collection: 'events',
+    });
 
     if (event.status !== 'published') {
-      throw new Forbidden
+      throw new Forbidden();
     }
   }
 
-  return data
-}
+  return data;
+};
 
-const isUserParticipated: CollectionBeforeValidateHook = async ({
-  data, // incoming data to update or create with'
-  operation, // 'create' or 'update'
-}) => {
-  if (operation === 'create') {
-  const participant = await payload.find({
-    collection: 'event-participants',
-    where: {
-      event_id: {
-        equals: data.event_id,
-      },
-      user_id: {
-        equals: data.user_id,
-      }
-    }
-  })
+// const isUserParticipated: CollectionBeforeValidateHook = async ({
+//   data, // incoming data to update or create with'
+//   operation, // 'create' or 'update'
+// }) => {
+//   if (operation === 'create') {
+//   const participant = await payload.find({
+//     collection: 'event-participants',
+//     where: {
+//       event_id: {
+//         equals: data.event_id,
+//       },
+//       user_id: {
+//         equals: data.user_id,
+//       }
+//     }
+//   })
 
-  if (participant.totalDocs === 1) {
-    return data
-  }
-}
-  throw new APIError('You have not register this event yet.', 403)
-}
+//   if (participant.totalDocs === 1) {
+//     return data
+//   }
+// }
+//   throw new APIError('You have not register this event yet.', 403)
+// }
 
 // Check if the posting user_id is the same as the logged in user
-const checkIsCurrentUser: CollectionBeforeValidateHook = async ({
-  data, // incoming data to update or create with'
-  req: { user },
-}) => {
-  if (data.user_id !== user.id) {
-    // throw new Forbidden
-    throw new APIError('You can only register event for yourself.', 403)
-  }
-  return data
-}
+// const checkIsCurrentUser: CollectionBeforeValidateHook = ({
+//   data, // incoming data to update or create with'
+//   req: { user },
+// }) => {
+//   if (data.user_id !== user.id) {
+//     // throw new Forbidden
+//     throw new APIError('You can only register event for yourself.', 403)
+//   }
+//   return data
+// }
 
 const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
-  if (!user)
-  {
-    return false
+  if (!user) {
+    return false;
   }
 
   if (isAdmin) {
-    return true
+    return true;
   }
   return {
     'event_id.createdBy': {
       equals: user.id,
     },
-  }
-}
+  };
+};
 
 const isCreatedBy: Access = ({ req: { user } }) => {
-  if (!user)
-  {
-    return false
+  if (!user) {
+    return false;
   }
   return {
     createdBy: {
       equals: user.id,
     },
-  }
-}
+  };
+};
 
-const recordReadAccess: Access = (req) => {
-  if (isEventCreatorOrAdmin(req)) return true
-  if (isCreatedBy(req)) return true
+const recordReadAccess: Access = req => {
+  if (isEventCreatorOrAdmin(req)) return true;
+  if (isCreatedBy(req)) return true;
 
   return {
     or: [
@@ -146,11 +147,11 @@ const recordReadAccess: Access = (req) => {
             },
           },
           {
-            "event_id.is_all_records_public": {
+            'event_id.is_all_records_public': {
               equals: true,
             },
-          }
-        ]
+          },
+        ],
       },
       {
         and: [
@@ -160,255 +161,257 @@ const recordReadAccess: Access = (req) => {
             },
           },
           {
-            "event_id.is_all_records_public": {
+            'event_id.is_all_records_public': {
               equals: false,
             },
-          }
-        ]
-      }
-    ]
-  }
-}
+          },
+        ],
+      },
+    ],
+  };
+};
 
 const EventContestRecords: CollectionConfig = {
   slug: 'event-contest-records',
-  labels: {
-    singular: {
-      zh: '活动比赛记录',
-      en: 'Event Contest Record',
-    },
-    plural: {
-      zh: '活动比赛记录',
-      en: 'Event Contest Records',
-    },
-  },
   access: {
-    create: isUser,
-    read: recordReadAccess,
-    update: (req) => {
-      return (isEventCreatorOrAdmin(req))
+    create: req => {
+      return isUser(req);
     },
     delete: isEventCreatorOrAdmin,
-  },
-  hooks: {
-    beforeValidate: [checkEventStatus, checkNumSubmissions],
-    beforeChange: [generateCreatedBy],
-    afterChange: [ranking],
+    read: recordReadAccess,
+    update: req => {
+      return isEventCreatorOrAdmin(req);
+    },
   },
   fields: [
     {
       name: 'createdBy',
-      label: {
-        zh: '所有者',
-        en: 'Created By',
-      },
       type: 'relationship',
+      admin: { hidden: true },
+      label: {
+        en: 'Created By',
+        zh: '所有者',
+      },
       relationTo: 'users',
       required: true,
-      admin: { hidden: true },
     },
     {
       name: 'event_id',
-      label: {
-        zh: '活动ID',
-        en: 'Event ID',
-      },
       type: 'relationship',
+      label: {
+        en: 'Event ID',
+        zh: '活动ID',
+      },
       relationTo: 'events',
       required: true,
     },
     {
       name: 'user_id',
-      label: {
-        zh: '参与者ID',
-        en: 'Participant ID',
-      },
       type: 'relationship',
+      label: {
+        en: 'Participant ID',
+        zh: '参与者ID',
+      },
       relationTo: 'users',
       required: true,
     },
     {
       name: 'status',
-      label: {
-        zh: '状态',
-        en: 'Status',
-      },
       type: 'select',
+      defaultValue: 'submitted',
+      label: {
+        en: 'Status',
+        zh: '状态',
+      },
       options: [
         {
           label: {
-            zh: '已提交',
             en: 'Submitted',
+            zh: '已提交',
           },
           value: 'submitted',
         },
         {
           label: {
-            zh: '已发布',
             en: 'Published',
+            zh: '已发布',
           },
           value: 'published',
         },
         {
           label: {
-            zh: '已取消',
             en: 'Rejected',
+            zh: '已取消',
           },
           value: 'rejected',
         },
       ],
       required: true,
-      defaultValue: 'submitted',
     },
     {
       name: 'is_validated',
-      label: {
-        zh: '合格提交',
-        en: 'Validated',
-      },
       type: 'checkbox',
       defaultValue: false,
+      label: {
+        en: 'Validated',
+        zh: '合格提交',
+      },
       required: true,
     },
     {
       name: 'is_auto_validated',
-      label: {
-        zh: '自动验证',
-        en: 'Auto Validated',
-      },
       type: 'checkbox',
-      defaultValue: false,
       admin: {
         readOnly: true,
+      },
+      defaultValue: false,
+      label: {
+        en: 'Auto Validated',
+        zh: '自动验证',
       },
     },
     {
       name: 'validatedBy',
-      label: {
-        zh: '验证者',
-        en: 'Validated By',
-      },
       type: 'relationship',
+      label: {
+        en: 'Validated By',
+        zh: '验证者',
+      },
       relationTo: 'users',
     },
     {
       name: 'validatedAt',
-      label: {
-        zh: '验证时间',
-        en: 'Validated At',
-      },
       type: 'date',
       admin: {
         date: {
           pickerAppearance: 'dayAndTime',
         },
       },
+      label: {
+        en: 'Validated At',
+        zh: '验证时间',
+      },
     },
     {
       name: 'is_featured',
-      label: {
-        zh: '精选',
-        en: 'Featured',
-      },
       type: 'checkbox',
       defaultValue: false,
+      label: {
+        en: 'Featured',
+        zh: '精选',
+      },
       required: true,
     },
     {
       name: 'race',
-      label: {
-        zh: '竞赛',
-        en: 'Race',
-      },
       type: 'group',
       fields: [
         {
           name: 'position',
-          label: {
-            zh: '排名',
-            en: 'Position',
-          },
           type: 'number',
-          required: true,
           defaultValue: 0,
+          label: {
+            en: 'Position',
+            zh: '排名',
+          },
+          required: true,
         },
         {
           name: 'time',
-          label: {
-            zh: '时间',
-            en: 'Time',
-          },
           type: 'text',
           defaultValue: '00:00:00',
+          label: {
+            en: 'Time',
+            zh: '时间',
+          },
         },
         {
           name: 'score',
-          label: {
-            zh: '分数',
-            en: 'Score',
-          },
           type: 'number',
-          required: true,
           defaultValue: 0,
+          label: {
+            en: 'Score',
+            zh: '分数',
+          },
+          required: true,
         },
         {
           name: 'is_scoreable',
-          label: {
-            zh: '可评分',
-            en: 'Scoreable',
-          },
           type: 'checkbox',
           defaultValue: true,
+          label: {
+            en: 'Scoreable',
+            zh: '可评分',
+          },
           required: true,
         },
         {
           name: 'is_winner',
-          label: {
-            zh: '获胜',
-            en: 'Winner',
-          },
           type: 'checkbox',
           defaultValue: false,
+          label: {
+            en: 'Winner',
+            zh: '获胜',
+          },
           required: true,
         },
         {
           name: 'file',
-          label: {
-            zh: '文件',
-            en: 'File',
-          },
           type: 'upload',
+          label: {
+            en: 'File',
+            zh: '文件',
+          },
           relationTo: 'media',
         },
         {
           name: 'video_bilibili_url',
-          label: {
-            zh: 'Bilibili视频链接',
-            en: 'Bilibili Video URL',
-          },
           type: 'text',
+          label: {
+            en: 'Bilibili Video URL',
+            zh: 'Bilibili视频链接',
+          },
         },
         {
           name: 'note',
-          label: {
-            zh: '备注',
-            en: 'Note',
-          },
           type: 'textarea',
+          label: {
+            en: 'Note',
+            zh: '备注',
+          },
         },
         {
           name: 'scoredBy',
-          label: {
-            zh: '评分者',
-            en: 'Scored By',
-          },
           type: 'relationship',
-          relationTo: 'users',
           hasMany: true,
-        }
+          label: {
+            en: 'Scored By',
+            zh: '评分者',
+          },
+          relationTo: 'users',
+        },
       ],
-    }
+      label: {
+        en: 'Race',
+        zh: '竞赛',
+      },
+    },
   ],
-}
+  hooks: {
+    afterChange: [ranking],
+    beforeChange: [generateCreatedBy],
+    beforeValidate: [checkEventStatus, checkNumSubmissions],
+  },
+  labels: {
+    plural: {
+      en: 'Event Contest Records',
+      zh: '活动比赛记录',
+    },
+    singular: {
+      en: 'Event Contest Record',
+      zh: '活动比赛记录',
+    },
+  },
+};
 
-export default EventContestRecords
+export default EventContestRecords;

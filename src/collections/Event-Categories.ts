@@ -1,53 +1,42 @@
-import type { CollectionConfig, CollectionAfterChangeHook } from 'payload/types'
-import { generateId } from '../utilities/GenerateMeta'
+import type { CollectionConfig } from 'payload/types';
 
 // Access Control
-import { isAdmin, isAdminFieldLevel } from '../access/isAdmin'
+import { isAdmin } from '../access/isAdmin';
 
 const EventCategories: CollectionConfig = {
   slug: 'event-categories',
-  admin: {
-    useAsTitle: 'name',
-  },
-  labels: {
-    singular: {
-      zh: '活动分类',
-      en: 'Event Category',
-    },
-    plural: {
-      zh: '活动分类',
-      en: 'Event Categories',
-    },
-  },
   access: {
-    create: (req) => {
-      return isAdmin(req)
+    create: req => {
+      return isAdmin(req);
+    },
+    delete: req => {
+      return isAdmin(req);
     },
     read: () => true,
-    update: (req) => {
-      return isAdmin(req)
+    update: req => {
+      return isAdmin(req);
     },
-    delete: (req) => {
-      return isAdmin(req)
-    },
+  },
+  admin: {
+    useAsTitle: 'name',
   },
   fields: [
     {
       name: 'name',
-      label: {
-        zh: '名称',
-        en: 'Name',
-      },
       type: 'text',
+      label: {
+        en: 'Name',
+        zh: '名称',
+      },
       required: true,
     },
     {
       name: 'slug',
-      label: {
-        zh: '别名',
-        en: 'Slug',
-      },
       type: 'text',
+      label: {
+        en: 'Slug',
+        zh: '别名',
+      },
       required: true,
       unique: true,
     },
@@ -55,6 +44,16 @@ const EventCategories: CollectionConfig = {
   hooks: {
     beforeChange: [],
   },
-}
+  labels: {
+    plural: {
+      en: 'Event Categories',
+      zh: '活动分类',
+    },
+    singular: {
+      en: 'Event Category',
+      zh: '活动分类',
+    },
+  },
+};
 
-export default EventCategories
+export default EventCategories;

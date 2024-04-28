@@ -1,20 +1,37 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "strict": false,
     "esModuleInterop": true,
+    "target": "es5",
+    "lib": [
+      "dom",
+      "dom.iterable",
+    ],
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "jsx": "react",
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "incremental": true,
+    "jsx": "preserve",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "isolatedModules": true,
     "paths": {
-      "payload/generated-types": ["./src/payload-types.ts"]
+      "react": [
+        "./node_modules/@types/react"
+      ],
     }
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", "build"],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx", "eslint.config.js",
+  ],
+  "exclude": [
+    "node_modules"
+  ],
   "ts-node": {
     "transpileOnly": true,
     "swc": true

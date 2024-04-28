@@ -1,20 +1,15 @@
-import payload from 'payload'
-import { Forbidden, APIError } from 'payload/errors'
-import type { Access } from 'payload/config'
-import type { CollectionConfig, CollectionBeforeValidateHook, CollectionAfterChangeHook  } from 'payload/types'
+import type { Access } from 'payload/config';
+import type {
+  CollectionAfterChangeHook,
+  CollectionBeforeValidateHook,
+  CollectionConfig,
+} from 'payload/types';
 
-import { generateId, generateCreatedBy } from '../utilities/GenerateMeta'
+import payload from 'payload';
+import { APIError, Forbidden } from 'payload/errors';
 
-import { isUser } from '../access/isUser'
-import { isAdmin } from '../access/isAdmin'
-
-// Count the number of participants in the event
-const ranking: CollectionAfterChangeHook = async ({
-  doc,
-  operation,
-}) => {
-  return doc
-}
+import { isAdmin } from '../access/isAdmin';
+import { generateCreatedBy } from '../utilities/GenerateMeta';
 
 const checkExistRecord: CollectionBeforeValidateHook = async ({
   data,
@@ -23,87 +18,85 @@ const checkExistRecord: CollectionBeforeValidateHook = async ({
 }) => {
   if (operation === 'create') {
     const record = await payload.findByID({
-      collection: 'event-contest-records',
       id: data.event_contest_record_id,
-    })
+      collection: 'event-contest-records',
+    });
 
     if (!record) {
-      throw new APIError('Record not found.', 404)
+      throw new APIError('Record not found.', 404);
     }
 
     const score = await payload.find({
       collection: 'event-contest-scores',
       where: {
+        createdBy: {
+          equals: user.id,
+        },
         event_contest_record_id: {
           equals: data.event_contest_record_id,
         },
-        createdBy: {
-          equals: user.id,
-        }
-      }
-    })
+      },
+    });
 
     if (score.totalDocs > 0) {
-      throw new APIError('You have already scored this record.', 403)
+      throw new APIError('You have already scored this record.', 403);
     }
   }
 
-  return data
-}
+  return data;
+};
 
-const updateRecordScore: CollectionAfterChangeHook  = async ({
-  doc,
-  operation,
-  req,
-}) => {
+const updateRecordScore: CollectionAfterChangeHook = async ({ doc, operation, req }) => {
   if (operation === 'create') {
-    const record = await req.payload.findByID({
-      req,
-      collection: 'event-contest-records',
+    const record = (await req.payload.findByID({
       id: doc.event_contest_record_id,
-    }) as any
+      collection: 'event-contest-records',
+      req,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    })) as any;
 
     const scores = await req.payload.find({
-      req,
       collection: 'event-contest-scores',
+      req,
       where: {
         event_contest_record_id: {
           equals: doc.event_contest_record_id,
-        }
-      }
-    })
+        },
+      },
+    });
 
-    let total = 0
+    let total = 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scores.docs.forEach((score: any) => {
-      total += score.score_info.total
-    })
+      total += score.score_info.total;
+    });
 
-    total = doc.score_info.total
+    total = doc.score_info.total;
 
-    let scoredBy = []
+    const scoredBy = [];
     if (record.race.scoredBy) {
       for (let i = 0; i < record.race.scoredBy.length; i++) {
-        scoredBy.push(record.race.scoredBy[i].id)
+        scoredBy.push(record.race.scoredBy[i].id);
       }
     }
 
-    scoredBy.push(doc.createdBy)
+    scoredBy.push(doc.createdBy);
 
-    record.score = total
+    record.score = total;
     await req.payload.update({
-      req,
-      collection: 'event-contest-records',
       id: doc.event_contest_record_id,
+      collection: 'event-contest-records',
       data: {
         race: {
           score: total,
           scoredBy,
         },
       },
-    })
+      req,
+    });
   }
-  return doc
-}
+  return doc;
+};
 
 // Check if the event is published and registration is open
 const checkEventStatus: CollectionBeforeValidateHook = async ({
@@ -112,208 +105,159 @@ const checkEventStatus: CollectionBeforeValidateHook = async ({
 }) => {
   if (operation === 'create') {
     const event = await payload.findByID({
-      collection: 'events',
       id: data.event_id,
-    })
+      collection: 'events',
+    });
 
     if (event.status !== 'published') {
-      throw new Forbidden
+      throw new Forbidden();
     }
   }
 
-  return data
-}
-
-const isUserParticipated: CollectionBeforeValidateHook = async ({
-  data, // incoming data to update or create with'
-  operation, // 'create' or 'update'
-}) => {
-  if (operation === 'create') {
-  const participant = await payload.find({
-    collection: 'event-participants',
-    where: {
-      event_id: {
-        equals: data.event_id,
-      },
-      user_id: {
-        equals: data.user_id,
-      }
-    }
-  })
-
-  if (participant.totalDocs === 1) {
-    return data
-  }
-}
-  throw new APIError('You have not register this event yet.', 403)
-}
-
-// Check if the posting user_id is the same as the logged in user
-const checkIsCurrentUser: CollectionBeforeValidateHook = async ({
-  data, // incoming data to update or create with'
-  req: { user },
-}) => {
-  if (data.user_id !== user.id) {
-    // throw new Forbidden
-    throw new APIError('You can only register event for yourself.', 403)
-  }
-  return data
-}
+  return data;
+};
 
 const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
-  if (!user)
-  {
-    return false
+  if (!user) {
+    return false;
   }
   if (isAdmin) {
-    return true
+    return true;
   }
   return {
     'event_id.createdBy': {
       equals: user.id,
     },
-  }
-}
-
-const isCreatedBy: Access = ({ req: { user } }) => {
-  if (!user)
-  {
-    return false
-  }
-  return {
-    createdBy: {
-      equals: user.id,
-    },
-  }
-}
+  };
+};
 
 const EventContestScores: CollectionConfig = {
   slug: 'event-contest-scores',
-  labels: {
-    singular: {
-      zh: '活动比赛分数',
-      en: 'Event Contest Score',
-    },
-    plural: {
-      zh: '活动比赛分数',
-      en: 'Event Contest Scores',
-    },
-  },
   access: {
     create: isEventCreatorOrAdmin,
+    delete: isEventCreatorOrAdmin,
     read: () => true,
     update: isEventCreatorOrAdmin,
-    delete: isEventCreatorOrAdmin,
-  },
-  hooks: {
-    beforeValidate: [checkEventStatus, checkExistRecord],
-    beforeChange: [generateCreatedBy],
-    afterChange: [updateRecordScore],
   },
   fields: [
     {
       name: 'createdBy',
-      label: {
-        zh: '所有者',
-        en: 'Created By',
-      },
       type: 'relationship',
+      admin: { hidden: true },
+      label: {
+        en: 'Created By',
+        zh: '所有者',
+      },
       relationTo: 'users',
       required: true,
-      admin: { hidden: true },
     },
     {
       name: 'event_id',
-      label: {
-        zh: '活动ID',
-        en: 'Event ID',
-      },
       type: 'relationship',
+      label: {
+        en: 'Event ID',
+        zh: '活动ID',
+      },
       relationTo: 'events',
       required: true,
     },
     {
       name: 'event_contest_record_id',
-      label: {
-        zh: '活动记录ID',
-        en: 'Record ID',
-      },
       type: 'relationship',
+      label: {
+        en: 'Record ID',
+        zh: '活动记录ID',
+      },
       relationTo: 'event-contest-records',
       required: true,
     },
     {
       name: 'score_info',
-      label: {
-        zh: '分数数据',
-        en: 'Score',
-      },
       type: 'group',
       fields: [
         {
           name: 'total',
-          label: {
-            zh: '总分数',
-            en: 'Total',
-          },
           type: 'number',
+          label: {
+            en: 'Total',
+            zh: '总分数',
+          },
           required: true,
         },
         {
           name: 'score_schema',
-          label: {
-            zh: '评分标准',
-            en: 'Score Schema',
-          },
           type: 'array',
           fields: [
             {
               name: 'name',
-              label: {
-                zh: '名称',
-                en: 'Name',
-              },
               type: 'text',
+              label: {
+                en: 'Name',
+                zh: '名称',
+              },
               required: true,
             },
             {
               name: 'min',
-              label: {
-                zh: '最小值',
-                en: 'Min',
-              },
               type: 'number',
+              label: {
+                en: 'Min',
+                zh: '最小值',
+              },
             },
             {
               name: 'max',
-              label: {
-                zh: '最大值',
-                en: 'Max',
-              },
               type: 'number',
+              label: {
+                en: 'Max',
+                zh: '最大值',
+              },
             },
             {
               name: 'score',
-              label: {
-                zh: '分数',
-                en: 'Score',
-              },
               type: 'number',
+              label: {
+                en: 'Score',
+                zh: '分数',
+              },
               required: true,
-            }
-          ]
+            },
+          ],
+          label: {
+            en: 'Score Schema',
+            zh: '评分标准',
+          },
         },
         {
           name: 'comment',
-          label: {
-            zh: '评语',
-            en: 'Comment',
-          },
           type: 'text',
+          label: {
+            en: 'Comment',
+            zh: '评语',
+          },
         },
       ],
+      label: {
+        en: 'Score',
+        zh: '分数数据',
+      },
     },
   ],
-}
+  hooks: {
+    afterChange: [updateRecordScore],
+    beforeChange: [generateCreatedBy],
+    beforeValidate: [checkEventStatus, checkExistRecord],
+  },
+  labels: {
+    plural: {
+      en: 'Event Contest Scores',
+      zh: '活动比赛分数',
+    },
+    singular: {
+      en: 'Event Contest Score',
+      zh: '活动比赛分数',
+    },
+  },
+};
 
-export default EventContestScores
+export default EventContestScores;

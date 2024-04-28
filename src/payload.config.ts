@@ -1,141 +1,131 @@
-import path from 'path'
-import axios from 'axios'
-
-import { postgresAdapter } from '@payloadcms/db-postgres'
-import { webpackBundler } from '@payloadcms/bundler-webpack' // bundler-import
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { buildConfig } from 'payload/config'
+import { webpackBundler } from '@payloadcms/bundler-webpack';
+import { postgresAdapter } from '@payloadcms/db-postgres';
+import axios from 'axios';
+import path from 'path'; // bundler-import
 import { oidcPlugin } from '@fiercecat/payload-plugin-oidc';
-import { cloudStorage } from '@payloadcms/plugin-cloud-storage'
-import { s3Adapter } from '@payloadcms/plugin-cloud-storage/s3'
+import { cloudStorage } from '@payloadcms/plugin-cloud-storage';
+import { s3Adapter } from '@payloadcms/plugin-cloud-storage/s3';
+import { lexicalEditor } from '@payloadcms/richtext-lexical';
+import { buildConfig } from 'payload/config';
 
-import Users from './collections/Users'
-// import Posts from './collections/Posts'
-// import StarSystems from './collections/StarSystems'
-import Media from './collections/Media'
-import Events from './collections/Events'
-import EventCategories from './collections/Event-Categories'
-import EventParticipants from './collections/Event-Participants'
-import EventOrganizers from './collections/Event-Organizers'
-import EventContestRecords from './collections/Event-ContestRecords'
-import EventContestScores from './collections/Event-ContestScores'
+import EventCategories from './collections/Event-Categories';
+import EventContestRecords from './collections/Event-ContestRecords';
+import EventContestScores from './collections/Event-ContestScores';
+import EventOrganizers from './collections/Event-Organizers';
+import EventParticipants from './collections/Event-Participants';
+import Events from './collections/Events';
+import Media from './collections/Media';
+import Users from './collections/Users';
 
 const cloudflareR2 = s3Adapter({
+  bucket: process.env.R2_BUCKET,
   config: {
-    endpoint: process.env.R2_ENDPOINT,
     credentials: {
       accessKeyId: process.env.R2_ACCESS_KEY_ID,
       secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
     },
+    endpoint: process.env.R2_ENDPOINT,
     region: process.env.R2_REGION,
   },
-  bucket: process.env.R2_BUCKET,
-})
+});
 
 export default buildConfig({
   admin: {
-    user: Users.slug,
     bundler: webpackBundler(), // bundler-config
-    webpack: (config) => {
+    user: Users.slug,
+    webpack: config => {
       return {
-          ...config,
-          resolve: {
-              ...config.resolve,
-              alias: {
-                  ...config.resolve.alias,
-                  // publitio_js_sdk: path.resolve(__dirname, "../mock.js"),
-                  // "fs-extra": path.resolve(__dirname, "../mock.js"),
-              },
-              fallback: {
-                  ...config.resolve.fallback,
-                  fs: false,
-                  stream: false,
-                  constants: false,
-                  assert: false,
-                  util: false,
-              },
+        ...config,
+        resolve: {
+          ...config.resolve,
+          alias: {
+            ...config.resolve.alias,
+            // publitio_js_sdk: path.resolve(__dirname, "../mock.js"),
+            // "fs-extra": path.resolve(__dirname, "../mock.js"),
           },
+          fallback: {
+            ...config.resolve.fallback,
+            assert: false,
+            constants: false,
+            fs: false,
+            stream: false,
+            util: false,
+          },
+        },
       };
-  },
+    },
   },
   collections: [
     Users,
-    // Posts,
     Events,
     EventCategories,
     EventParticipants,
     EventOrganizers,
     EventContestRecords,
     EventContestScores,
-    // StarSystems,
-    Media
+    Media,
   ],
-  cors: [
-    '*',
-    'https://local-dev.citizenwiki.cn:3000',
-    'https://42kit.citizenwiki.cn',
-  ],
+  cors: ['*', 'https://local-dev.citizenwiki.cn:3000', 'https://42kit.citizenwiki.cn'],
+  editor: lexicalEditor({}), // editor-config
+  graphQL: {
+    schemaOutputFile: path.resolve(__dirname, 'generated-schema.graphql'),
+  },
   localization: {
+    defaultLocale: 'zh',
+    fallback: true,
     locales: [
       {
+        code: 'en',
         label: {
           en: 'English',
           zh: '英语',
         },
-        code: 'en',
       },
       {
+        code: 'zh',
         label: {
           en: 'Simplified Chinese',
           zh: '简体中文',
         },
-        code: 'zh',
       },
     ],
-    defaultLocale: 'zh',
-    fallback: true,
-  },
-  editor: lexicalEditor({}), // editor-config
-  typescript: {
-    outputFile: path.resolve(__dirname, 'payload-types.ts'),
-    declare: false,
-  },
-  graphQL: {
-    schemaOutputFile: path.resolve(__dirname, 'generated-schema.graphql'),
   },
   plugins: [
     oidcPlugin({
-      clientID: process.env.OIDC_CLIENT_ID,
-      clientSecret: process.env.OIDC_CLIENT_SECRET,
       authorizationURL: `${process.env.OIDC_URI}/oidc/auth`,
-      tokenURL: `${process.env.OIDC_URI}/oidc/token`,
-      initPath: `/oidc/signin`,
       callbackPath: `/oidc/callback`,
       callbackURL: `${process.env.SELF_URL}/oidc/callback`,
-      redirectUriCookieName: `42kit_connect_redirect_url`,
+      clientID: process.env.OIDC_CLIENT_ID,
+      clientSecret: process.env.OIDC_CLIENT_SECRET,
       connectPath: `/oidc/connect`,
-      scope: 'openid offline_access profile email',
+      createUserIfNotFound: true,
+      initPath: `/oidc/signin`,
       mongoUrl: process.env.DATABASE_URI,
+      redirectUriCookieName: `42kit_connect_redirect_url`,
+      scope: 'openid offline_access profile email',
+      tokenURL: `${process.env.OIDC_URI}/oidc/token`,
       userCollection: {
         slug: Users.slug,
         searchKey: 'sub',
       },
-      createUserIfNotFound: true,
       async userinfo(accessToken) {
-        const { data: user } = await axios.get(`${process.env.OIDC_URI}/oidc/me
-        `, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
+        const { data: user } = await axios.get(
+          `${process.env.OIDC_URI}/oidc/me
+        `,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
           },
-        });
+        );
 
         // console.log('userinfo', user);
 
         return {
-          sub: user.sub,
           name: user.name,
           email: user.email,
           iss: process.env.OIDC_URI,
+          sub: user.sub,
           username: user.username,
           // You can use OIDC user custom data to get the role for this app
           // role: user.custom_data?.my_app_role,
@@ -150,27 +140,30 @@ export default buildConfig({
         media: {
           adapter: cloudflareR2,
         },
-      }
+      },
     }),
-
   ],
   rateLimit: {
-    window: 120000,
     max: 300,
     trustProxy: true,
+    window: 120000,
+  },
+  typescript: {
+    declare: false,
+    outputFile: path.resolve(__dirname, 'payload-types.ts'),
   },
   // database-adapter-config-start
   // db: mongooseAdapter({
   //   url: process.env.DATABASE_URI,
   // }),
   db: postgresAdapter({
+    idType: 'uuid',
     pool: {
       connectionString: process.env.DATABASE_URI,
     },
-    idType: 'uuid',
   }),
+  debug: process.env.DEBUG_MODE === 'true',
   upload: {
     defParamCharset: 'utf8',
   },
-  debug: process.env.DEBUG_MODE === 'true',
-})
+});

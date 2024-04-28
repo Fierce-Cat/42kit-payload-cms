@@ -1,5 +1,6 @@
 module.exports = {
   extends: ['@payloadcms'],
+  ignorePatterns: ['**/migrations/*', 'src/server.ts'],
   overrides: [
     {
       extends: ['plugin:@typescript-eslint/disable-type-checked'],
@@ -14,6 +15,7 @@ module.exports = {
     {
       files: ['package.json', 'tsconfig.json'],
       rules: {
+        'jest/no-if': 'off',
         'perfectionist/sort-array-includes': 'off',
         'perfectionist/sort-astro-attributes': 'off',
         'perfectionist/sort-classes': 'off',
@@ -34,5 +36,20 @@ module.exports = {
       },
     },
   ],
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    project: './tsconfig.json',
+  },
+  plugins: ['@typescript-eslint'],
   root: true,
-}
+  rules: {
+    indent: ['error', 2, { SwitchCase: 1 }],
+    'jest/no-if': 'off',
+    'no-multi-spaces': 'error',
+    'no-multiple-empty-lines': 'error',
+    'no-var': 'error',
+    'prefer-const': 'error',
+    semi: 'error',
+    'space-in-parens': 'error',
+  },
+};
