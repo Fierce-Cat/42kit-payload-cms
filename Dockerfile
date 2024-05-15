@@ -6,8 +6,8 @@ WORKDIR /home/node/app
 COPY package*.json ./
 
 COPY . .
-RUN npm install
-RUN npm run build
+RUN yarn install
+RUN yarn build
 
 FROM base as runtime
 
@@ -17,11 +17,11 @@ ENV PAYLOAD_CONFIG_PATH=dist/payload.config.js
 WORKDIR /home/node/app
 COPY package*.json  ./
 
-RUN npm install --production
+RUN yarn install --production
 COPY --from=builder /home/node/app/dist ./dist
 COPY --from=builder /home/node/app/build ./build
 
-RUN npm run payload migrate
+RUN yarn payload migrate
 
 EXPOSE 3000
 
