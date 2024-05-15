@@ -71,7 +71,7 @@
     "nodemon": "^2.0.6",
     "prettier": "^3.2.5",
     "ts-node": "^9.1.1",
-    "typescript": "5.3.5"
+    "typescript": "^5.3.5"
   },
   "resolutions": {
     "jackspeak": "2.1.1"
