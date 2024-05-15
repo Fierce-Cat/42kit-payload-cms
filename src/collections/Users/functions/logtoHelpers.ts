@@ -55,7 +55,7 @@ export async function updateLogtoUser(data: any) {
       return null;
     });
 
-  return res.data;
+  return res;
 }
 
 export async function getLogtoUsernameAvaliable(username: string): Promise<boolean> {
