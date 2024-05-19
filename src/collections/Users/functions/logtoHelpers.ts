@@ -1,4 +1,11 @@
 import axios from 'axios'
+
+interface token {
+  access_token: string
+  expires_in: number
+  token_type: string
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export async function getLogtoApiToken() {
   // use basic authentication with client_id and client_secret to get access token
@@ -25,14 +32,17 @@ export async function getLogtoApiToken() {
     .catch(() => {
       return null
     })
+    .then(res => {
+      return res.data as token
+    })
   return res.data
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type, @typescript-eslint/no-explicit-any
 export async function updateLogtoUser(data: any) {
   // Get Logto access token
-  const token = await getLogtoApiToken()
-  if (!token) {
+  const token: token = await getLogtoApiToken()
+  if (!token.access_token) {
     throw new Error('Failed to get access token')
   }
   // We only update the user's name
@@ -60,7 +70,7 @@ export async function updateLogtoUser(data: any) {
 
 export async function getLogtoUsernameAvaliable(username: string): Promise<boolean> {
   // Get Logto access token
-  const token = await getLogtoApiToken()
+  const token: token = await getLogtoApiToken()
   if (!token) {
     throw new Error('Failed to get access token')
   }
