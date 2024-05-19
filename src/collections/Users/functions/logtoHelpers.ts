@@ -34,6 +34,7 @@ export async function getLogtoApiToken() {
     })
     .then(res => {
       console.log('res', res);
+      console.log('res.data', res.data);
       return res.data;
     });
   return res.data;
