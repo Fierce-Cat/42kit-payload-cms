@@ -195,6 +195,7 @@ const Users: CollectionConfig = {
               name: 'avatar_url',
               type: 'text',
               admin: { hidden: true },
+              defaultValue: 'https://r2-citizencat-data.citizenwiki.cn/cms-assets/zd487cyv5u-100x100.jpg',
             },
           ],
           label: {
