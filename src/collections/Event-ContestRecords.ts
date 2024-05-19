@@ -89,7 +89,7 @@ const isUserParticipated: CollectionBeforeValidateHook = async ({
     return data
   }
 }
-  throw new APIError('You have not register this event yet.', 403)
+  throw new APIError('User has not register this event yet.', 403)
 }
 
 // Check if the posting user_id is the same as the logged in user
@@ -191,7 +191,7 @@ const EventContestRecords: CollectionConfig = {
     delete: isEventCreatorOrAdmin,
   },
   hooks: {
-    beforeValidate: [checkEventStatus, checkNumSubmissions],
+    beforeValidate: [checkEventStatus, isUserParticipated, checkNumSubmissions],
     beforeChange: [generateCreatedBy],
     afterChange: [ranking],
   },
