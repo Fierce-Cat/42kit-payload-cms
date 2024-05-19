@@ -1,17 +1,10 @@
-import axios from 'axios';
-
-interface token {
-  access_token: string;
-  expires_in: number;
-  token_type: string;
-}
-
+import axios from 'axios'
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export async function getLogtoApiToken() {
   // use basic authentication with client_id and client_secret to get access token
-  const clientId = process.env.LOGTO_API_CLIENT_ID;
-  const clientSecret = process.env.LOGTO_API_CLIENT_SECRET;
-  const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+  const clientId = process.env.LOGTO_API_CLIENT_ID
+  const clientSecret = process.env.LOGTO_API_CLIENT_SECRET
+  const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const res: any = await axios
@@ -30,23 +23,17 @@ export async function getLogtoApiToken() {
       },
     )
     .catch(() => {
-      return null;
+      return null
     })
-    .then(res => {
-      console.log('res', res);
-      console.log('res.data', res.data);
-      return res.data;
-    });
-  return res.data;
+  return res.data
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type, @typescript-eslint/no-explicit-any
 export async function updateLogtoUser(data: any) {
   // Get Logto access token
-  const token = await getLogtoApiToken();
-  console.log('token', token);
-  if (!token || !token.access_token) {
-    throw new Error('Failed to get access token');
+  const token = await getLogtoApiToken()
+  if (!token) {
+    throw new Error('Failed to get access token')
   }
   // We only update the user's name
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,20 +52,20 @@ export async function updateLogtoUser(data: any) {
       },
     )
     .catch(() => {
-      return null;
-    });
+      return null
+    })
 
-  return res;
+  return res
 }
 
 export async function getLogtoUsernameAvaliable(username: string): Promise<boolean> {
   // Get Logto access token
-  const token = await getLogtoApiToken();
+  const token = await getLogtoApiToken()
   if (!token) {
-    throw new Error('Failed to get access token');
+    throw new Error('Failed to get access token')
   }
 
-  const searchQuery = new URLSearchParams([['search.username', username]]);
+  const searchQuery = new URLSearchParams([['search.username', username]])
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data } = await axios
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -89,8 +76,8 @@ export async function getLogtoUsernameAvaliable(username: string): Promise<boole
       },
     })
     .catch(err => {
-      throw new Error('Failed to get user:' + err);
-    });
+      throw new Error('Failed to get user:' + err)
+    })
 
-  return data.length === 0;
+  return data.length === 0
 }

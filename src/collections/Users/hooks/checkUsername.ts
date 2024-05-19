@@ -14,12 +14,6 @@ export const checkUsername: CollectionBeforeValidateHook = async ({ data, origin
       }
       return data
     }
-  } else {
-    // Modify the username to a local username with prefix internal_
-    if (data.username && data.username !== originalDoc?.username) {
-      data.username = `internal_${data.username}`
-    }
-    return data
   }
   return data
 }
