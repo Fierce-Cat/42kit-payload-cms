@@ -73,23 +73,24 @@ const isUserParticipated: CollectionBeforeValidateHook = async ({
   operation, // 'create' or 'update'
 }) => {
   if (operation === 'create') {
-  const participant = await payload.find({
-    collection: 'event-participants',
-    where: {
-      event_id: {
-        equals: data.event_id,
-      },
-      user_id: {
-        equals: data.user_id,
+    const participant = await payload.find({
+      collection: 'event-participants',
+      where: {
+        event_id: {
+          equals: data.event_id,
+        },
+        user_id: {
+          equals: data.user_id,
+        }
       }
-    }
-  })
+    })
 
-  if (participant.totalDocs === 1) {
-    return data
+    if (participant.totalDocs === 1) {
+      return data
+    }
+
+    throw new APIError('User has not register this event yet.', 403)
   }
-}
-  throw new APIError('User has not register this event yet.', 403)
 }
 
 // Check if the posting user_id is the same as the logged in user
