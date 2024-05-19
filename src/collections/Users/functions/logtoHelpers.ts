@@ -43,6 +43,7 @@ export async function getLogtoApiToken() {
 export async function updateLogtoUser(data: any) {
   // Get Logto access token
   const token: token = await getLogtoApiToken();
+  console.log('token', token);
   if (!token.access_token) {
     throw new Error('Failed to get access token');
   }
