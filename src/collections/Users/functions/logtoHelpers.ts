@@ -42,9 +42,9 @@ export async function getLogtoApiToken() {
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type, @typescript-eslint/no-explicit-any
 export async function updateLogtoUser(data: any) {
   // Get Logto access token
-  const token: token = await getLogtoApiToken();
+  const token = await getLogtoApiToken();
   console.log('token', token);
-  if (!token.access_token) {
+  if (!token || !token.access_token) {
     throw new Error('Failed to get access token');
   }
   // We only update the user's name
@@ -72,7 +72,7 @@ export async function updateLogtoUser(data: any) {
 
 export async function getLogtoUsernameAvaliable(username: string): Promise<boolean> {
   // Get Logto access token
-  const token: token = await getLogtoApiToken();
+  const token = await getLogtoApiToken();
   if (!token) {
     throw new Error('Failed to get access token');
   }
