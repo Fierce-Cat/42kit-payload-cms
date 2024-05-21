@@ -163,6 +163,7 @@ export interface Event {
   num_max_participants: number;
   show_participants?: boolean | null;
   organizers?: (string | EventOrganizer)[] | null;
+  organizing_users?: (string | User)[] | null;
   show_organizers?: boolean | null;
   register_questions?: EventRegisterQuestions;
   is_featured?: boolean | null;

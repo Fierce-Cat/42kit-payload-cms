@@ -9,90 +9,25 @@ import { isAdmin, isAdminFieldLevel } from '../access/isAdmin'
 import { isAdminOrSelf } from '../access/isAdminOrSelf'
 import { isUser } from '../access/isUser'
 
-const isOrganizer: Access< any, User > = ({req: {user}, id}) => {
-  if (!user)
-  {
-    return false
-  }
-  return payload.find({
-    collection: 'event-organizers',
-    where: {
-      user_id: {
-        equals: user.id
-      },
-      event_id: {
-        equals: id
-      },
-      role: {
-        equals: 'host'
+const isEventOrganizer: Access = ({ req: { user } }) => {
+  if (user) {
+    return {
+      'organizing_users': {
+        equals: user.id,
       }
     }
-  }).then((organizers) => {
-    if (organizers.totalDocs > 0)
-    {
-      return true
-    }
-    return false
-  }).catch(() => {
-    return false
-  })
+  }
 }
 
 const isCreatedBy: Access = ({ req: { user } }) => {
-  if (!user)
-  {
-    return false
-  }
-  return {
-    createdBy: {
-      equals: user.id,
-    },
-  }
-}
-
-// 只有管理员/活动创建者/组织者可以查看未发布的活动，其他用户只能查看已发布的活动
-const eventReadAccess: Access = (req) => {
-  if (isAdmin(req))
-  {
-    return true
-  }
-  if (isCreatedBy(req))
-  {
-    return true
-  }
-  if (isOrganizer(req))
-  {
-    return true
-  }
-  return {
-    status: {
-      equals: 'published',
+  if (user) {
+    return {
+      createdBy: {
+        equals: user.id,
+      },
     }
   }
 }
-
-// 只有注册用户可以创建活动
-const eventCreateAccess: Access = (req) => {
-  return isUser(req)
-}
-
-// 允许管理员、活动创建者和组织者更新活动
-const eventUpdateAccess: Access = (req) => {
-  if (isAdmin(req))
-  {
-    return true
-  }
-  if (isCreatedBy(req))
-  {
-    return true
-  }
-  if (isOrganizer(req))
-  {
-    return true
-  }
-  return false
-}
-
 
 const Events: CollectionConfig = {
   slug: 'events',
@@ -100,10 +35,36 @@ const Events: CollectionConfig = {
     useAsTitle: 'title',
   },
   access: {
-    read: eventReadAccess,
-    create: eventCreateAccess,
-    update: eventUpdateAccess,
-    delete: isAdminOrSelf,
+    read: (req) => {
+      if (isAdmin(req))
+        return true
+      if (isCreatedBy(req))
+        return true
+      if (isEventOrganizer(req))
+        return true
+      return {
+        status: {
+          equals: 'published',
+        }
+      }
+    },
+    create: isUser,
+    update: (req) => {
+      if (isAdmin(req))
+        return true
+      if (isCreatedBy(req))
+        return true
+      if (isEventOrganizer(req))
+        return true
+      return false
+    },
+    delete: (req) => {
+      if (isAdmin(req))
+        return true
+      if (isCreatedBy(req))
+        return true
+      return false
+    },
   },
   hooks: {
     beforeChange: [generateCreatedBy, generateRandomSlug],
@@ -414,6 +375,16 @@ const Events: CollectionConfig = {
               },
               type: 'relationship',
               relationTo: 'event-organizers',
+              hasMany: true,
+            },
+            {
+              name: 'organizing_users',
+              label: {
+                zh: '组织者',
+                en: 'Organizing Users',
+              },
+              type: 'relationship',
+              relationTo: 'users',
               hasMany: true,
             },
             {

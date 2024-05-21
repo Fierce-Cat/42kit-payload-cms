@@ -18,6 +18,7 @@ const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation, re
   }
 
   const event_id = doc.event_id.id ? doc.event_id.id : doc.event_id
+  const user_id = doc.user_id.id ? doc.user_id.id : doc.user_id
 
   const event = await req.payload.findByID({
     req,
@@ -25,19 +26,28 @@ const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation, re
     id: event_id,
   }) as unknown as Event;
 
+  // organizer objects
   if (!event.organizers) {
     event.organizers = []
   }
-
   const organizerIds = event.organizers.map((organizer: any) => organizer.id)
   organizerIds.push(doc.id)
+
+  // user objects
+  if (!event.organizing_users) {
+    event.organizing_users = []
+  }
+
+  const organizingUserIds = event.organizing_users.map((user: any) => user.id)
+  organizingUserIds.push(user_id)
 
   await req.payload.update({
     req,
     collection: 'events',
     id: event.id,
     data: {
-      organizers: organizerIds
+      organizers: organizerIds,
+      organizing_users: organizingUserIds,
     },
   })
 
@@ -46,18 +56,21 @@ const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation, re
 
 const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, id, req }) => {
 
+  const event_id = doc.event_id.id ? doc.event_id.id : doc.event_id
+  const user_id = doc.user_id.id ? doc.user_id.id : doc.user_id
+
+
   const event = await req.payload.findByID({
     req,
     collection: 'events',
-    id: doc.event_id.id,
+    id: event_id,
   }) as unknown as Event;
 
   let organizerIds = []
 
-  // event.organizers is an array of objects, but after we delete an organizer, the original object will become a string, so we need to check the type of the object, if it's an object, we push the id to the organizerIds array
-  event.organizers.forEach((organizer: any) => {
-    if (typeof organizer === 'object') {
-      organizerIds.push(organizer.id)
+  event.organizing_users.forEach((organizing_users: any) => {
+    if (organizing_users.id !== user_id) {
+      organizerIds.push(organizing_users.id)
     }
   })
 
@@ -66,7 +79,7 @@ const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, id, req })
     collection: 'events',
     id: event.id,
     data: {
-      organizers: organizerIds
+      organizing_users: organizerIds,
     },
   })
 

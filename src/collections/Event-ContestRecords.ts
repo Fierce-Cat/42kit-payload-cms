@@ -7,6 +7,7 @@ import { generateId, generateCreatedBy } from '../utilities/GenerateMeta'
 
 import { isUser } from '../access/isUser'
 import { isAdmin } from '../access/isAdmin'
+import { User } from './../payload-types';
 
 // Count the number of participants in the event
 const ranking: CollectionAfterChangeHook = async ({
@@ -105,40 +106,50 @@ const checkIsCurrentUser: CollectionBeforeValidateHook = async ({
   return data
 }
 
-const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
-  if (!user)
-  {
-    return false
-  }
-
-  if (isAdmin) {
-    return true
-  }
-  return {
-    'event_id.createdBy': {
-      equals: user.id,
-    },
-  }
-}
-
 const isCreatedBy: Access = ({ req: { user } }) => {
-  if (!user)
-  {
-    return false
-  }
-  return {
-    createdBy: {
-      equals: user.id,
-    },
+  if (user) {
+    return {
+      or: [
+        {
+          createdBy: {
+            equals: user.id,
+          },
+        },
+        {
+          user_id: {
+            equals: user.id,
+          },
+        }
+      ]
+    }
   }
 }
 
-const recordReadAccess: Access = (req) => {
-  if (isEventCreatorOrAdmin(req)) return true
-  if (isCreatedBy(req)) return true
+const isEventOrganizer: Access = ({ req: { user } }) => {
+  if (user) {
+    return {
+      or: [
+        {
+          'event_id.organizing_users': {
+            equals: user.id,
+          }
+        },
+        {
+          'event_id.createdBy': {
+            equals: user.id,
+          }
+        }
+      ]
+    }
+  }
+}
+
+
+const recordReadAccess: Access = ({ req: { user } }) => {
 
   return {
     or: [
+    // all records are public
       {
         and: [
           {
@@ -153,6 +164,7 @@ const recordReadAccess: Access = (req) => {
           }
         ]
       },
+      // only published records are public
       {
         and: [
           {
@@ -185,11 +197,36 @@ const EventContestRecords: CollectionConfig = {
   },
   access: {
     create: isUser,
-    read: recordReadAccess,
-    update: (req) => {
-      return (isEventCreatorOrAdmin(req))
+    read: (req) => {
+      if (isAdmin(req)) {
+        return true
+      }
+      if (isEventOrganizer(req)) {
+        return true
+      }
+      if (isCreatedBy(req)) {
+        return true
+      }
+      return recordReadAccess(req)
     },
-    delete: isEventCreatorOrAdmin,
+    update: (req) => {
+      if (isAdmin(req)) {
+        return true
+      }
+      if (isCreatedBy(req)) {
+        return true
+      }
+      return false
+    },
+    delete: (req) => {
+      if (isAdmin(req)) {
+        return true
+      }
+      if (isCreatedBy(req)) {
+        return true
+      }
+      return false
+    },
   },
   hooks: {
     beforeValidate: [checkEventStatus, isUserParticipated, checkNumSubmissions],
