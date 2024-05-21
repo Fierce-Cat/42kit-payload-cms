@@ -169,9 +169,18 @@ const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
     return true
   }
   return {
-    'event_id.createdBy': {
-      equals: user.id,
-    },
+    or: [
+        {
+          'event_id.organizing_users': {
+            equals: user.id,
+          }
+        },
+        {
+          'event_id.createdBy': {
+            equals: user.id,
+          }
+        }
+      ]
   }
 }
 
