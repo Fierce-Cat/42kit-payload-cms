@@ -376,16 +376,22 @@ const Events: CollectionConfig = {
               type: 'relationship',
               relationTo: 'event-organizers',
               hasMany: true,
+              admin: {
+                readOnly: true,
+              },
             },
             {
               name: 'organizing_users',
               label: {
-                zh: '组织者',
+                zh: '组织用户',
                 en: 'Organizing Users',
               },
               type: 'relationship',
               relationTo: 'users',
               hasMany: true,
+              admin: {
+                readOnly: true,
+              },
             },
             {
               name: 'show_organizers',
