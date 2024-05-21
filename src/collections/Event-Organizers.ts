@@ -16,10 +16,13 @@ const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation, re
   if (operation !== 'create') {
     return doc
   }
+
+  const event_id = doc.event_id.id ? doc.event_id.id : doc.event_id
+
   const event = await req.payload.findByID({
     req,
     collection: 'events',
-    id: doc.event_id.id,
+    id: event_id,
   }) as unknown as Event;
 
   if (!event.organizers) {
