@@ -57,10 +57,11 @@ const updateRecordScore: CollectionAfterChangeHook  = async ({
   req,
 }) => {
   if (operation === 'create') {
+    const record_id = doc.event_contest_record_id.id ? doc.event_contest_record_id.id : doc.event_contest_record_id
     const record = await req.payload.findByID({
       req,
       collection: 'event-contest-records',
-      id: doc.event_contest_record_id.id,
+      id: record_id,
     }) as any
 
     const scores = await req.payload.find({
@@ -68,7 +69,7 @@ const updateRecordScore: CollectionAfterChangeHook  = async ({
       collection: 'event-contest-scores',
       where: {
         event_contest_record_id: {
-          equals: doc.event_contest_record_id.id,
+          equals: record_id,
         }
       }
     })
@@ -77,8 +78,6 @@ const updateRecordScore: CollectionAfterChangeHook  = async ({
     scores.docs.forEach((score: any) => {
       total += score.score_info.total
     })
-
-    total = doc.score_info.total
 
     let scoredBy = []
     if (record.race.scoredBy) {
