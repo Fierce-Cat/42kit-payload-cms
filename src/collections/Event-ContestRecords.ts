@@ -64,6 +64,12 @@ const checkEventStatus: CollectionBeforeValidateHook = async ({
     if (event.status !== 'published') {
       throw new Forbidden
     }
+    if (event.date_started > new Date()) {
+      throw new APIError('Event has not started yet.', 403)
+    }
+    if (event.date_ended < new Date()) {
+      throw new APIError('Event has ended.', 403)
+    }
   }
 
   return data
