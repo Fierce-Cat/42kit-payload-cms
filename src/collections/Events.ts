@@ -376,9 +376,6 @@ const Events: CollectionConfig = {
               type: 'relationship',
               relationTo: 'event-organizers',
               hasMany: true,
-              admin: {
-                readOnly: true,
-              },
             },
             {
               name: 'organizing_users',
@@ -389,9 +386,6 @@ const Events: CollectionConfig = {
               type: 'relationship',
               relationTo: 'users',
               hasMany: true,
-              admin: {
-                readOnly: true,
-              },
             },
             {
               name: 'show_organizers',
