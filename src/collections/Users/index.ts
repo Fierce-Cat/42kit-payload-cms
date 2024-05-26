@@ -103,7 +103,9 @@ const Users: CollectionConfig = {
     defaultColumns: ['username', 'name', 'id', 'roles'],
     useAsTitle: 'name',
   },
-  auth: true,
+  auth: {
+    tokenExpiration: 7 * 24 * 60 * 60, // 7 days
+  },
   endpoints: [
     {
       // check if username is available
