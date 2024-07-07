@@ -56,7 +56,7 @@ const updateRecordScore: CollectionAfterChangeHook  = async ({
   operation,
   req,
 }) => {
-  if (operation === 'create') {
+  if (operation === 'create' || operation === 'update') {
     const record_id = doc.event_contest_record_id.id ? doc.event_contest_record_id.id : doc.event_contest_record_id
     const record = await req.payload.findByID({
       req,
