@@ -92,7 +92,7 @@ const updateRecordScore: CollectionAfterChangeHook  = async ({
     await req.payload.update({
       req,
       collection: 'event-contest-records',
-      id: doc.event_contest_record_id.id,
+      id: doc.event_contest_record_id.id ? doc.event_contest_record_id.id : doc.event_contest_record_id,
       data: {
         race: {
           score: total,

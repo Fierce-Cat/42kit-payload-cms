@@ -118,9 +118,9 @@ const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
   {
     return false
   }
-  // if (isAdmin) {
-  //   return true
-  // }
+  if (isAdmin) {
+    return true
+  }
   return {
     'event_id.createdBy': {
       equals: user.id,

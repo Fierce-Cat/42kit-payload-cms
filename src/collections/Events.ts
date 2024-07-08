@@ -124,9 +124,13 @@ const Events: CollectionConfig = {
       relationTo: 'users',
       required: true,
       access:{
-        update: () => false,
+        update: (req) => {
+          if (isAdmin(req)) {
+            return true
+          }
+        },
       },
-      admin: { hidden: true },
+      admin: { position: 'sidebar' },
     },
     {
       name: 'slug',
