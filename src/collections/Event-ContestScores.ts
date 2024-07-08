@@ -183,6 +183,30 @@ const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
   }
 }
 
+const isEventOrganizer: Access = ({ req: { user } }) => {
+  if (user) {
+    return {
+      or: [
+        {
+          'event_id.organizing_users': {
+            equals: user.id,
+          }
+        },
+        {
+          'event_id.createdBy': {
+            equals: user.id,
+          }
+        },
+        {
+          'event_id.createdBy.id': {
+            equals: user.id,
+          }
+        }
+      ]
+    }
+  }
+}
+
 const isCreatedBy: Access = ({ req: { user } }) => {
   if (!user)
   {
@@ -208,10 +232,40 @@ const EventContestScores: CollectionConfig = {
     },
   },
   access: {
-    create: isEventCreatorOrAdmin,
+    create: (req) => {
+      if (isAdmin(req)) {
+        return true
+      }
+      if (isEventOrganizer(req)) {
+        return true
+      }
+      if (isCreatedBy(req)) {
+        return true
+      }
+    },
     read: () => true,
-    update: isEventCreatorOrAdmin,
-    delete: isEventCreatorOrAdmin,
+    update: (req) => {
+      if (isAdmin(req)) {
+        return true
+      }
+      if (isEventOrganizer(req)) {
+        return true
+      }
+      if (isCreatedBy(req)) {
+        return true
+      }
+    },
+    delete: (req) => {
+      if (isAdmin(req)) {
+        return true
+      }
+      if (isEventOrganizer(req)) {
+        return true
+      }
+      if (isCreatedBy(req)) {
+        return true
+      }
+    },
   },
   hooks: {
     beforeValidate: [checkEventStatus, checkExistRecord],
