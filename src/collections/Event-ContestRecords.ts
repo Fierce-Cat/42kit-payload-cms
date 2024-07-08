@@ -144,6 +144,11 @@ const isEventOrganizer: Access = ({ req: { user } }) => {
           'event_id.createdBy': {
             equals: user.id,
           }
+        },
+        {
+          'event_id.createdBy.id': {
+            equals: user.id,
+          }
         }
       ]
     }
