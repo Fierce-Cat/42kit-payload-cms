@@ -219,13 +219,16 @@ const EventContestRecords: CollectionConfig = {
       if (isAdmin(req)) {
         return true
       }
-      if (isCreatedBy(req)) {
+      if (isEventOrganizer(req)) {
         return true
       }
       return false
     },
     delete: (req) => {
       if (isAdmin(req)) {
+        return true
+      }
+      if (isEventOrganizer(req)) {
         return true
       }
       if (isCreatedBy(req)) {
