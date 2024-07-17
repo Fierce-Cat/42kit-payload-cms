@@ -158,10 +158,10 @@ const isEventOrganizer: Access = ({ req: { user } }) => {
 const isEventOrganizerFieldLevel: FieldAccess<{
   event_id: any, id: string
 }, unknown, User> = ({
-  req: { user },
-  doc,
+  req: { user }, id, doc
 }) => {
-  if (user) {
+
+  if (user && doc) {
     const eventId: string = typeof doc.event_id === 'object' ? doc.event_id.id : doc.event_id
 
     const event = payload.findByID({
@@ -185,7 +185,6 @@ const isEventOrganizerFieldLevel: FieldAccess<{
         return true
       }
     }
-
     return false
   }
 }
@@ -438,15 +437,7 @@ const EventContestRecords: CollectionConfig = {
           required: true,
           defaultValue: 0,
           access: {
-            read: (req) => {
-              if (isAdminFieldLevel(req)) {
-                return true
-              }
-              if (isEventOrganizerFieldLevel(req)) {
-                return true
-              }
-              return false
-            }
+            read: (isEventOrganizerFieldLevel && isAdminFieldLevel),
           },
         },
         {
