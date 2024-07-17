@@ -1,13 +1,13 @@
 import payload from 'payload'
 import { Forbidden, APIError } from 'payload/errors'
-import type { Access, FieldAccess } from 'payload/config'
-import type { CollectionConfig, CollectionAfterChangeHook, CollectionBeforeValidateHook } from 'payload/types'
+import type { Access } from 'payload/config'
+import type { CollectionConfig, CollectionAfterChangeHook, CollectionBeforeValidateHook, FieldAccess } from 'payload/types'
 
 import { generateId, generateCreatedBy } from '../utilities/GenerateMeta'
 
 import { isUser } from '../access/isUser'
 import { isAdmin, isAdminFieldLevel } from '../access/isAdmin'
-import { User } from './../payload-types';
+import { Event, User } from './../payload-types';
 
 // Count the number of participants in the event
 const ranking: CollectionAfterChangeHook = async ({
@@ -157,27 +157,40 @@ const isEventOrganizer: Access = ({ req: { user } }) => {
 
 const isEventOrganizerFieldLevel: FieldAccess<{ id: string }, unknown, User> = ({
   req: { user },
+  id,
 }) => {
   if (user) {
-    return {
-      or: [
-        {
-          'event_id.organizing_users': {
-            equals: user.id,
-          }
-        },
-        {
-          'event_id.createdBy': {
-            equals: user.id,
-          }
-        },
-        {
-          'event_id.createdBy.id': {
-            equals: user.id,
-          }
-        }
-      ]
+    // return {
+    //   or: [
+    //     {
+    //       'event_id.organizing_users': {
+    //         equals: user.id,
+    //       }
+    //     },
+    //     {
+    //       'event_id.createdBy': {
+    //         equals: user.id,
+    //       }
+    //     },
+    //     {
+    //       'event_id.createdBy.id': {
+    //         equals: user.id,
+    //       }
+    //     }
+    //   ]
+    // }
+    const event = payload.findByID({
+      collection: 'events',
+      id,
+    }) as unknown as Event
+
+    if (event.organizing_users.includes(user.id)) {
+      return true
+    } else if (event.createdBy === user.id) {
+      return true
     }
+
+    return false
   }
 }
 
@@ -430,10 +443,10 @@ const EventContestRecords: CollectionConfig = {
           defaultValue: 0,
           access: {
             read: (req) => {
-              if (isAdmin(req)) {
+              if (isAdminFieldLevel(req)) {
                 return true
               }
-              if (isEventOrganizer(req)) {
+              if (isEventOrganizerFieldLevel(req)) {
                 return true
               }
               return false
