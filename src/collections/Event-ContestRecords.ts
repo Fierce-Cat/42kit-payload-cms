@@ -1,12 +1,12 @@
 import payload from 'payload'
 import { Forbidden, APIError } from 'payload/errors'
-import type { Access } from 'payload/config'
+import type { Access, FieldAccess } from 'payload/config'
 import type { CollectionConfig, CollectionAfterChangeHook, CollectionBeforeValidateHook } from 'payload/types'
 
 import { generateId, generateCreatedBy } from '../utilities/GenerateMeta'
 
 import { isUser } from '../access/isUser'
-import { isAdmin } from '../access/isAdmin'
+import { isAdmin, isAdminFieldLevel } from '../access/isAdmin'
 import { User } from './../payload-types';
 
 // Count the number of participants in the event
@@ -132,6 +132,32 @@ const isCreatedBy: Access = ({ req: { user } }) => {
 }
 
 const isEventOrganizer: Access = ({ req: { user } }) => {
+  if (user) {
+    return {
+      or: [
+        {
+          'event_id.organizing_users': {
+            equals: user.id,
+          }
+        },
+        {
+          'event_id.createdBy': {
+            equals: user.id,
+          }
+        },
+        {
+          'event_id.createdBy.id': {
+            equals: user.id,
+          }
+        }
+      ]
+    }
+  }
+}
+
+const isEventOrganizerFieldLevel: FieldAccess<{ id: string }, unknown, User> = ({
+  req: { user },
+}) => {
   if (user) {
     return {
       or: [
@@ -402,6 +428,17 @@ const EventContestRecords: CollectionConfig = {
           type: 'number',
           required: true,
           defaultValue: 0,
+          access: {
+            read: (req) => {
+              if (isAdmin(req)) {
+                return true
+              }
+              if (isEventOrganizer(req)) {
+                return true
+              }
+              return false
+            }
+          },
         },
         {
           name: 'is_scoreable',

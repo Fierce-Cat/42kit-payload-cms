@@ -243,7 +243,17 @@ const EventContestScores: CollectionConfig = {
         return true
       }
     },
-    read: () => true,
+    read: (req) => {
+      if (isAdmin(req)) {
+        return true
+      }
+      if (isEventOrganizer(req)) {
+        return true
+      }
+      if (isCreatedBy(req)) {
+        return true
+      }
+    },
     update: (req) => {
       if (isAdmin(req)) {
         return true
