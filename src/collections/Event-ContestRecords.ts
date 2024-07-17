@@ -155,33 +155,18 @@ const isEventOrganizer: Access = ({ req: { user } }) => {
   }
 }
 
-const isEventOrganizerFieldLevel: FieldAccess<{ id: string }, unknown, User> = ({
+const isEventOrganizerFieldLevel: FieldAccess<{
+  event_id: any, id: string
+}, unknown, User> = ({
   req: { user },
-  id,
+  doc,
 }) => {
   if (user) {
-    // return {
-    //   or: [
-    //     {
-    //       'event_id.organizing_users': {
-    //         equals: user.id,
-    //       }
-    //     },
-    //     {
-    //       'event_id.createdBy': {
-    //         equals: user.id,
-    //       }
-    //     },
-    //     {
-    //       'event_id.createdBy.id': {
-    //         equals: user.id,
-    //       }
-    //     }
-    //   ]
-    // }
+    const eventId: string = typeof doc.event_id === 'object' ? doc.event_id.id : doc.event_id
+
     const event = payload.findByID({
       collection: 'events',
-      id,
+      id: eventId,
       depth: 2,
     }) as unknown as Event
 
