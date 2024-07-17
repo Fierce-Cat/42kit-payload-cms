@@ -182,12 +182,23 @@ const isEventOrganizerFieldLevel: FieldAccess<{ id: string }, unknown, User> = (
     const event = payload.findByID({
       collection: 'events',
       id,
+      depth: 2,
     }) as unknown as Event
 
-    if (event.organizing_users.includes(user.id)) {
+    if (typeof event.createdBy === 'object' && event.createdBy.id === user.id) {
       return true
-    } else if (event.createdBy === user.id) {
+    } else if (typeof event.createdBy === 'string' && event.createdBy === user.id) {
       return true
+    } else if (typeof event.organizing_users === 'object') {
+      // if organizing_users is an array of objects
+      if (event.organizing_users.some((organizer: any) => organizer.id === user.id)) {
+        return true
+      }
+
+      // if organizing_users is an array of strings
+      if (event.organizing_users.some((organizer: any) => organizer === user.id)) {
+        return true
+      }
     }
 
     return false
