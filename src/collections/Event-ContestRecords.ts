@@ -7,6 +7,7 @@ import { generateId, generateCreatedBy } from '../utilities/GenerateMeta'
 
 import { isUser } from '../access/isUser'
 import { isAdmin, isAdminFieldLevel } from '../access/isAdmin'
+import { checkRole } from './Users/checkRole'
 import { Event, User } from './../payload-types';
 
 // Count the number of participants in the event
@@ -155,13 +156,16 @@ const isEventOrganizer: Access = ({ req: { user } }) => {
   }
 }
 
-const isEventOrganizerFieldLevel: FieldAccess<{
+const isEventOrganizerOrAdminFieldLevel: FieldAccess<{
   event_id: any, id: string
 }, unknown, User> = ({
   req: { user }, id, doc
 }) => {
-
   if (user && doc) {
+    if (checkRole(['admin'], user)) {
+      return true
+    }
+
     const eventId: string = typeof doc.event_id === 'object' ? doc.event_id.id : doc.event_id
 
     const event = payload.findByID({
@@ -437,7 +441,7 @@ const EventContestRecords: CollectionConfig = {
           required: true,
           defaultValue: 0,
           access: {
-            read: (isEventOrganizerFieldLevel && isAdminFieldLevel),
+            read: isEventOrganizerOrAdminFieldLevel,
           },
         },
         {
