@@ -22,6 +22,8 @@ RUN yarn install --production
 COPY --from=builder /home/node/app/dist ./dist
 COPY --from=builder /home/node/app/build ./build
 
+RUN yarn payload migrate
+
 EXPOSE 3000
 
 CMD ["node", "dist/server.js"]
