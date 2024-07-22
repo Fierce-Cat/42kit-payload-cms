@@ -186,7 +186,7 @@ const Events: CollectionConfig = {
                 },
                 {
                   label: {
-                    zh: '下线',
+                    zh: '已结束',
                     en: 'Archived',
                   },
                   value: 'archived',
@@ -307,10 +307,15 @@ const Events: CollectionConfig = {
                 en: 'Content',
               },
               type: 'json',
-              defaultValue: {},
-              admin: {
-                disabled: true,
-              }
+              localized: true,
+            },
+            {
+              name: 'rich_content',
+              label: {
+                zh: '富文本内容',
+                en: 'Rich Content',
+              },
+              type: 'richText',
             },
             {
               name: 'geo_address',
