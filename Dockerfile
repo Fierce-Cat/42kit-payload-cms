@@ -9,6 +9,8 @@ COPY . .
 RUN yarn install
 RUN yarn build
 
+RUN yarn payload migrate
+
 FROM base as runtime
 
 ENV NODE_ENV=production
@@ -21,8 +23,6 @@ COPY yarn.lock ./
 RUN yarn install --production
 COPY --from=builder /home/node/app/dist ./dist
 COPY --from=builder /home/node/app/build ./build
-
-RUN yarn payload migrate
 
 EXPOSE 3000
 
