@@ -3,12 +3,12 @@ import { Forbidden, APIError } from 'payload/errors'
 import type { Access } from 'payload/config'
 import type { CollectionConfig, CollectionAfterChangeHook, CollectionBeforeValidateHook, FieldAccess } from 'payload/types'
 
-import { generateId, generateCreatedBy } from '../utilities/GenerateMeta'
+import { generateId, generateCreatedBy } from '../../utilities/GenerateMeta'
 
-import { isUser } from '../access/isUser'
-import { isAdmin, isAdminFieldLevel } from '../access/isAdmin'
-import { checkRole } from './Users/checkRole'
-import { Event, User } from './../payload-types';
+import { isUser } from '../../access/isUser'
+import { isAdmin, isAdminFieldLevel } from '../../access/isAdmin'
+import { checkRole } from '../Users/checkRole'
+import { Event, User } from '../../payload-types';
 
 // Count the number of participants in the event
 const ranking: CollectionAfterChangeHook = async ({

@@ -1,13 +1,13 @@
 import payload from 'payload'
 import type { CollectionConfig, CollectionBeforeReadHook } from 'payload/types'
 import type { Access } from 'payload/config'
-import type { User } from '../payload-types'
-import { generateId, generateCreatedBy, generateRandomSlug } from '../utilities/GenerateMeta'
+import type { User } from '../../payload-types'
+import { generateId, generateCreatedBy, generateRandomSlug } from '../../utilities/GenerateMeta'
 
 // Access Control
-import { isAdmin, isAdminFieldLevel } from '../access/isAdmin'
-import { isAdminOrSelf } from '../access/isAdminOrSelf'
-import { isUser } from '../access/isUser'
+import { isAdmin, isAdminFieldLevel } from '../../access/isAdmin'
+import { isAdminOrSelf } from '../../access/isAdminOrSelf'
+import { isUser } from '../../access/isUser'
 
 const isEventOrganizer: Access = ({ req: { user } }) => {
   if (user) {

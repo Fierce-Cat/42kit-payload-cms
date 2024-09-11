@@ -3,10 +3,10 @@ import { Forbidden, APIError } from 'payload/errors'
 import type { Access } from 'payload/config'
 import type { CollectionConfig, CollectionBeforeValidateHook, CollectionAfterChangeHook  } from 'payload/types'
 
-import { generateId, generateCreatedBy } from '../utilities/GenerateMeta'
+import { generateId, generateCreatedBy } from '../../utilities/GenerateMeta'
 
-import { isUser } from '../access/isUser'
-import { isAdmin } from '../access/isAdmin'
+import { isUser } from '../../access/isUser'
+import { isAdmin } from '../../access/isAdmin'
 
 // Count the number of participants in the event
 const ranking: CollectionAfterChangeHook = async ({

@@ -13,12 +13,12 @@ import Users from './collections/Users'
 // import Posts from './collections/Posts'
 // import StarSystems from './collections/StarSystems'
 import Media from './collections/Media'
-import Events from './collections/Events'
-import EventCategories from './collections/Event-Categories'
-import EventParticipants from './collections/Event-Participants'
-import EventOrganizers from './collections/Event-Organizers'
-import EventContestRecords from './collections/Event-ContestRecords'
-import EventContestScores from './collections/Event-ContestScores'
+import Events from './collections/Events/Index'
+import EventCategories from './collections/Events/Event-Categories'
+import EventParticipants from './collections/Events/Event-Participants'
+import EventOrganizers from './collections/Events/Event-Organizers'
+import EventContestRecords from './collections/Events/Event-ContestRecords'
+import EventContestScores from './collections/Events/Event-ContestScores'
 
 const cloudflareR2 = s3Adapter({
   config: {

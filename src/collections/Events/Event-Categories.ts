@@ -1,8 +1,8 @@
 import type { CollectionConfig, CollectionAfterChangeHook } from 'payload/types'
-import { generateId } from '../utilities/GenerateMeta'
+import { generateId } from '../../utilities/GenerateMeta'
 
 // Access Control
-import { isAdmin, isAdminFieldLevel } from '../access/isAdmin'
+import { isAdmin, isAdminFieldLevel } from '../../access/isAdmin'
 
 const EventCategories: CollectionConfig = {
   slug: 'event-categories',
