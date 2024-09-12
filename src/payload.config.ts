@@ -19,6 +19,8 @@ import EventParticipants from './collections/Events/Event-Participants'
 import EventOrganizers from './collections/Events/Event-Organizers'
 import EventContestRecords from './collections/Events/Event-ContestRecords'
 import EventContestScores from './collections/Events/Event-ContestScores'
+import ContentVotes from './collections/Votes/Content-Votes'
+import ContentStats from './collections/Votes/Content-Stats'
 
 const cloudflareR2 = s3Adapter({
   config: {
@@ -68,7 +70,9 @@ export default buildConfig({
     EventContestRecords,
     EventContestScores,
     // StarSystems,
-    Media
+    Media,
+    ContentVotes,
+    ContentStats,
   ],
   cors: [
     '*',
@@ -156,7 +160,7 @@ export default buildConfig({
   ],
   rateLimit: {
     window: 120000,
-    max: 300,
+    max: 50000,
     trustProxy: true,
   },
   // database-adapter-config-start
@@ -172,5 +176,5 @@ export default buildConfig({
   upload: {
     defParamCharset: 'utf8',
   },
-  debug: process.env.DEBUG_MODE === 'true',
+  debug: true,
 })

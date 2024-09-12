@@ -1,8 +1,8 @@
 import payload from 'payload'
-import type { CollectionConfig, CollectionBeforeReadHook } from 'payload/types'
+import type { CollectionConfig, CollectionAfterChangeHook } from 'payload/types'
 import type { Access } from 'payload/config'
 import type { User } from '../../payload-types'
-import { generateId, generateCreatedBy, generateRandomSlug } from '../../utilities/GenerateMeta'
+import { generateCreatedBy, generateRandomSlug } from '../../utilities/GenerateMeta'
 
 // Access Control
 import { isAdmin, isAdminFieldLevel } from '../../access/isAdmin'
@@ -29,11 +29,63 @@ const isCreatedBy: Access = ({ req: { user } }) => {
   }
 }
 
+const createVoteStats: CollectionAfterChangeHook = async ({ doc, req }) => {
+  try {
+    if (doc.stat) {
+      return
+    }
+
+    const stats = await req.payload.find({
+      req,
+      collection: 'content-stats',
+      where: {
+        "content.value": {
+          equals: doc.id,
+        },
+      },
+    })
+
+    if (stats.totalDocs === 0) {
+      const res = await req.payload.create({
+        req,
+        collection: 'content-stats',
+        data: {
+          content: {
+            relationTo: "events",
+            value: doc.id,
+          },
+          type: 'upvote',
+        },
+      })
+
+      req.payload.update({
+        req,
+        collection: 'events',
+        id: doc.id,
+        data: {
+          stat: res.id,
+        },
+      })
+
+    } else {
+      console.log('Stats already exists')
+      req.payload.update({
+        req,
+        collection: 'events',
+        id: doc.id,
+        data: {
+          stat: stats.docs[0].id,
+        },
+      })
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+
 const Events: CollectionConfig = {
   slug: 'events',
-  admin: {
-    useAsTitle: 'title',
-  },
   access: {
     read: (req) => {
       if (isAdmin(req))
@@ -68,6 +120,7 @@ const Events: CollectionConfig = {
   },
   hooks: {
     beforeChange: [generateCreatedBy, generateRandomSlug],
+    afterChange: [createVoteStats],
   },
   labels: {
     singular: {
@@ -290,6 +343,18 @@ const Events: CollectionConfig = {
                 }
               ]
             },
+            {
+              name: 'stat',
+              label: {
+                zh: '统计',
+                en: 'Stats',
+              },
+              type: 'relationship',
+              relationTo: 'content-stats',
+              access: {
+                update: isAdminFieldLevel,
+              }
+            }
           ]
         },
         // Basic Tab End
