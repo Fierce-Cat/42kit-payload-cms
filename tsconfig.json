@@ -19,7 +19,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "jsx": "react",
-    "module": "commonjs",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "sourceMap": true,
@@ -29,7 +29,7 @@
         "./node_modules/@types/react",
       ],
       "payload/generated-types": ["./src/payload-types.ts"],
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"],
@@ -37,5 +37,9 @@
   "ts-node": {
     "transpileOnly": true,
     "swc": true
+  },
+  "tsc-alias": {
+    "resolveFullPaths": true,
+    "verbose": false
   }
 }
