@@ -14,8 +14,9 @@ module.exports = {
     {
       files: ['package.json', 'tsconfig.json'],
       rules: {
-        'perfectionist/sort-array-includes': 'off',
-        'perfectionist/sort-astro-attributes': 'off',
+        'jest/no-if': 'off',
+        'perfectionist/sort-array-includes': 'true',
+        'perfectionist/sort-astro-attributes': 'true',
         'perfectionist/sort-classes': 'off',
         'perfectionist/sort-enums': 'off',
         'perfectionist/sort-exports': 'off',
@@ -24,8 +25,8 @@ module.exports = {
         'perfectionist/sort-jsx-props': 'off',
         'perfectionist/sort-keys': 'off',
         'perfectionist/sort-maps': 'off',
-        'perfectionist/sort-named-exports': 'off',
-        'perfectionist/sort-named-imports': 'off',
+        'perfectionist/sort-named-exports': 'true',
+        'perfectionist/sort-named-imports': 'true',
         'perfectionist/sort-object-types': 'off',
         'perfectionist/sort-objects': 'off',
         'perfectionist/sort-svelte-attributes': 'off',
@@ -35,4 +36,19 @@ module.exports = {
     },
   ],
   root: true,
-}
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    project: './tsconfig.json',
+  },
+  plugins: ['@typescript-eslint'],
+  rules: {
+    indent: ['error', 2, { SwitchCase: 1 }],
+    'jest/no-if': 'off',
+    'no-multi-spaces': 'error',
+    'no-multiple-empty-lines': 'error',
+    'no-var': 'error',
+    'prefer-const': 'error',
+    semi: 'error',
+    'space-in-parens': 'error',
+  },
+};
