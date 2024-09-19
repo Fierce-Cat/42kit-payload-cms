@@ -2,6 +2,7 @@ import { AMQPClient } from '@cloudamqp/amqp-client';
 import payload from 'payload';
 
 let consumerInitialized = false; // Flag to track if the consumer is already initialized
+const amqpUrl = process.env.AMQP_URL || 'amqp://user:password@localhost:5672';
 
 export async function upvoteConsumer() {
   if (consumerInitialized) {
@@ -9,7 +10,7 @@ export async function upvoteConsumer() {
     return;
   }
 
-  const amqp = new AMQPClient("amqp://user:password@localhost:5672");
+  const amqp = new AMQPClient(amqpUrl);
   const conn = await amqp.connect();
   const channel = await conn.channel();
   const queue = await channel.queue('upvote-queue', { durable: true });
