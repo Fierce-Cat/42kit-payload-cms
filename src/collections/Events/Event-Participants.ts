@@ -1,59 +1,63 @@
 import payload from 'payload';
 import { Forbidden, APIError } from 'payload/errors';
 import type { Access } from 'payload/config';
-import type { CollectionConfig, CollectionAfterChangeHook, CollectionBeforeValidateHook } from 'payload/types';
+import type {
+  CollectionConfig,
+  CollectionAfterChangeHook,
+  CollectionBeforeValidateHook,
+} from 'payload/types';
 
-import { generateId, generateCreatedBy } from '../../utilities/GenerateMeta';
+import { generateCreatedBy } from '../../utilities/GenerateMeta';
 
 import { isUser } from '../../access/isUser';
 import { isAdmin } from '../../access/isAdmin';
 
 // Count the number of participants in the event
-const countParticipants: CollectionAfterChangeHook = async ({
-  doc,
-  operation,
-  req,
-}) => {
+const countParticipants: CollectionAfterChangeHook = async ({ doc, operation, req }) => {
   if (operation === 'create') {
     // Count the number of participants in the event
-    await req.payload.find({
-      req,
-      collection: 'event-participants',
-      where: {
-        event_id: {
-          equals: doc.event_id.id ?? doc.event_id,
-        }
-      }
-    }).then((participants) => {
-      req.payload.update({
+    await req.payload
+      .find({
         req,
-        collection: 'events',
-        id: doc.event_id.id ?? doc.event_id,
-        data: {
-          num_participants: participants.totalDocs,
-        }
+        collection: 'event-participants',
+        where: {
+          event_id: {
+            equals: doc.event_id.id ?? doc.event_id,
+          },
+        },
+      })
+      .then(participants => {
+        req.payload.update({
+          req,
+          collection: 'events',
+          id: doc.event_id.id ?? doc.event_id,
+          data: {
+            num_participants: participants.totalDocs,
+          },
+        });
       });
-    });
   } else if (operation === 'update') {
     // Count the number of participants in the event
-    await req.payload.find({
-      req,
-      collection: 'event-participants',
-      where: {
-        event_id: {
-          equals: doc.event_id.id ?? doc.event_id,
-        }
-      }
-    }).then((participants) => {
-      req.payload.update({
+    await req.payload
+      .find({
         req,
-        collection: 'events',
-        id: doc.event_id.id ?? doc.event_id,
-        data: {
-          num_participants: participants.totalDocs,
-        }
+        collection: 'event-participants',
+        where: {
+          event_id: {
+            equals: doc.event_id.id ?? doc.event_id,
+          },
+        },
+      })
+      .then(participants => {
+        req.payload.update({
+          req,
+          collection: 'events',
+          id: doc.event_id.id ?? doc.event_id,
+          data: {
+            num_participants: participants.totalDocs,
+          },
+        });
       });
-    });
   }
   return doc;
 };
@@ -70,15 +74,15 @@ const checkEventStatus: CollectionBeforeValidateHook = async ({
     });
 
     if (event.status !== 'published') {
-      throw new Forbidden;
+      throw new Forbidden();
     }
 
     if (event.is_registration_open !== true) {
-      throw new Forbidden;
+      throw new Forbidden();
     }
 
     if (event.max_participants !== 0 && event.num_participants >= event.max_participants) {
-      throw new Forbidden;
+      throw new Forbidden();
     }
 
     if (new Date(event.date_ended as string) < new Date()) {
@@ -102,8 +106,8 @@ const checkUserParticipation: CollectionBeforeValidateHook = async ({
         },
         user_id: {
           equals: data.user_id,
-        }
-      }
+        },
+      },
     });
 
     if (participant.totalDocs > 0) {
@@ -127,8 +131,7 @@ const checkIsCurrentUser: CollectionBeforeValidateHook = async ({
 };
 
 const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
-  if (!user)
-  {
+  if (!user) {
     return false;
   }
   if (isAdmin) {
@@ -142,8 +145,7 @@ const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
 };
 
 const isCreatedBy: Access = ({ req: { user } }) => {
-  if (!user)
-  {
+  if (!user) {
     return false;
   }
   return {
@@ -153,11 +155,11 @@ const isCreatedBy: Access = ({ req: { user } }) => {
   };
 };
 
-const participantsReadAccess: Access = (req) => {
+const participantsReadAccess: Access = req => {
   if (isEventCreatorOrAdmin(req)) return true;
 
   return {
-    "event_id.show_participants": {
+    'event_id.show_participants': {
       equals: true,
     },
   };
@@ -178,8 +180,8 @@ const EventParticipants: CollectionConfig = {
   access: {
     create: isUser,
     read: participantsReadAccess,
-    update: (req) => {
-      return (isCreatedBy(req) || isEventCreatorOrAdmin(req));
+    update: req => {
+      return isCreatedBy(req) || isEventCreatorOrAdmin(req);
     },
     delete: isEventCreatorOrAdmin,
   },
@@ -295,7 +297,7 @@ const EventParticipants: CollectionConfig = {
           },
           type: 'checkbox',
         },
-      ]
+      ],
     },
     {
       name: 'status',

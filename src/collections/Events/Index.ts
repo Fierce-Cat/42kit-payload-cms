@@ -1,20 +1,18 @@
 import payload from 'payload';
 import type { CollectionConfig, CollectionAfterChangeHook } from 'payload/types';
 import type { Access } from 'payload/config';
-import type { User } from '../../payload-types';
 import { generateCreatedBy, generateRandomSlug } from '../../utilities/GenerateMeta';
 
 // Access Control
 import { isAdmin, isAdminFieldLevel } from '../../access/isAdmin';
-import { isAdminOrSelf } from '../../access/isAdminOrSelf';
 import { isUser } from '../../access/isUser';
 
 const isEventOrganizer: Access = ({ req: { user } }) => {
   if (user) {
     return {
-      'organizing_users': {
+      organizing_users: {
         equals: user.id,
-      }
+      },
     };
   }
 };
@@ -39,7 +37,7 @@ const createVoteStats: CollectionAfterChangeHook = async ({ doc, req }) => {
       req,
       collection: 'content-stats',
       where: {
-        "content.value": {
+        'content.value': {
           equals: doc.id,
         },
       },
@@ -51,7 +49,7 @@ const createVoteStats: CollectionAfterChangeHook = async ({ doc, req }) => {
         collection: 'content-stats',
         data: {
           content: {
-            relationTo: "events",
+            relationTo: 'events',
             value: doc.id,
           },
           type: 'upvote',
@@ -66,7 +64,6 @@ const createVoteStats: CollectionAfterChangeHook = async ({ doc, req }) => {
           stat: res.id,
         },
       });
-
     } else {
       console.log('Stats already exists');
       req.payload.update({
@@ -83,38 +80,29 @@ const createVoteStats: CollectionAfterChangeHook = async ({ doc, req }) => {
   }
 };
 
-
 const Events: CollectionConfig = {
   slug: 'events',
   access: {
-    read: (req) => {
-      if (isAdmin(req))
-        return true;
-      if (isCreatedBy(req))
-        return true;
-      if (isEventOrganizer(req))
-        return true;
+    read: req => {
+      if (isAdmin(req)) return true;
+      if (isCreatedBy(req)) return true;
+      if (isEventOrganizer(req)) return true;
       return {
         status: {
           equals: 'published',
-        }
+        },
       };
     },
     create: isUser,
-    update: (req) => {
-      if (isAdmin(req))
-        return true;
-      if (isCreatedBy(req))
-        return true;
-      if (isEventOrganizer(req))
-        return true;
+    update: req => {
+      if (isAdmin(req)) return true;
+      if (isCreatedBy(req)) return true;
+      if (isEventOrganizer(req)) return true;
       return false;
     },
-    delete: (req) => {
-      if (isAdmin(req))
-        return true;
-      if (isCreatedBy(req))
-        return true;
+    delete: req => {
+      if (isAdmin(req)) return true;
+      if (isCreatedBy(req)) return true;
       return false;
     },
   },
@@ -136,6 +124,7 @@ const Events: CollectionConfig = {
     {
       path: '/:id/participateStatus',
       method: 'get',
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- req, res, next are required parameters
       handler: async (req, res, next) => {
         if (!req.user) {
           return res.status(401).send('Unauthorized');
@@ -145,19 +134,19 @@ const Events: CollectionConfig = {
           collection: 'event-participants',
           where: {
             user_id: {
-              equals: req.user.id
+              equals: req.user.id,
             },
             event_id: {
-              equals: req.params.id
-            }
-          }
+              equals: req.params.id,
+            },
+          },
         });
 
         if (participations.totalDocs > 0) {
           return res.status(200).send(participations.docs[0]);
         } else {
           return res.status(404).send({
-            status: 'not_participated'
+            status: 'not_participated',
           });
         }
       },
@@ -176,8 +165,8 @@ const Events: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       required: true,
-      access:{
-        update: (req) => {
+      access: {
+        update: req => {
           if (isAdmin(req)) {
             return true;
           }
@@ -250,13 +239,13 @@ const Events: CollectionConfig = {
                     en: 'Deleted',
                   },
                   value: 'deleted',
-                }
+                },
               ],
               defaultValue: 'draft',
               required: true,
               admin: {
                 position: 'sidebar',
-              }
+              },
             },
             {
               name: 'summary',
@@ -312,7 +301,7 @@ const Events: CollectionConfig = {
                       pickerAppearance: 'dayAndTime',
                     },
                     width: '33%',
-                  }
+                  },
                 },
                 {
                   name: 'date_ended',
@@ -327,7 +316,7 @@ const Events: CollectionConfig = {
                       pickerAppearance: 'dayAndTime',
                     },
                     width: '33%',
-                  }
+                  },
                 },
                 {
                   name: 'timezone',
@@ -339,9 +328,9 @@ const Events: CollectionConfig = {
                   required: true,
                   admin: {
                     width: '33%',
-                  }
-                }
-              ]
+                  },
+                },
+              ],
             },
             {
               name: 'stat',
@@ -353,9 +342,9 @@ const Events: CollectionConfig = {
               relationTo: 'content-stats',
               access: {
                 update: isAdminFieldLevel,
-              }
-            }
-          ]
+              },
+            },
+          ],
         },
         // Basic Tab End
         // Details Tab Start
@@ -398,7 +387,7 @@ const Events: CollectionConfig = {
               },
               type: 'text',
             },
-          ]
+          ],
         },
         // Details Tab End
         // User Relationship Tab Start
@@ -419,7 +408,7 @@ const Events: CollectionConfig = {
               required: true,
               admin: {
                 readOnly: true,
-              }
+              },
             },
             {
               name: 'num_max_participants',
@@ -430,7 +419,6 @@ const Events: CollectionConfig = {
               type: 'number',
               required: true,
               defaultValue: 0,
-
             },
             {
               name: 'show_participants',
@@ -536,9 +524,9 @@ const Events: CollectionConfig = {
                   },
                   type: 'checkbox',
                 },
-              ]
-            }
-          ]
+              ],
+            },
+          ],
         },
         // User Relationship Tab End
         // Event Settings Tab Start
@@ -578,7 +566,7 @@ const Events: CollectionConfig = {
               type: 'checkbox',
               defaultValue: true,
             },
-          ]
+          ],
         },
         {
           label: {
@@ -682,12 +670,11 @@ const Events: CollectionConfig = {
               type: 'number',
               defaultValue: 1,
               required: true,
-            }
-          ]
-        }
+            },
+          ],
+        },
       ],
-
-    }
+    },
   ],
 };
 

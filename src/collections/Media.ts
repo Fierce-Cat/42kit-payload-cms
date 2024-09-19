@@ -2,11 +2,11 @@ import { CollectionConfig, CollectionBeforeOperationHook } from 'payload/types';
 import type { Access } from 'payload/config';
 
 // Utilities
-import { generateId, generateCreatedBy } from '../utilities/GenerateMeta';
+import { generateCreatedBy } from '../utilities/GenerateMeta';
 
 // Access Control
 import { isAdmin, isAdminFieldLevel } from '../access/isAdmin';
-import { isUser, isUserFieldLevel } from '../access/isUser';
+import { isUser } from '../access/isUser';
 
 const isCreator: Access = ({ req: { user } }) => {
   if (!user) return false;
@@ -17,10 +17,9 @@ const isCreator: Access = ({ req: { user } }) => {
   };
 };
 
-const hasMediaId: Access = ({req, id}) => {
+const hasMediaId: Access = ({ req, id }) => {
   if (req.baseUrl !== '/api/media') return true;
-  if (!id)
-    return false;
+  if (!id) return false;
   return true;
 };
 
@@ -36,19 +35,18 @@ const generateAltName: CollectionBeforeOperationHook = async ({ args }) => {
 const Media: CollectionConfig = {
   slug: 'media',
   access: {
-    create: (req) => {
-      return (isUser(req));
+    create: req => {
+      return isUser(req);
     },
-    read: (req) => {
-      return (hasMediaId(req) || isAdmin(req) || isCreator(req));
+    read: req => {
+      return hasMediaId(req) || isAdmin(req) || isCreator(req);
     },
-    update: (req) => {
-      return (isCreator(req) || isAdmin(req));
-
+    update: req => {
+      return isCreator(req) || isAdmin(req);
     },
-    delete: (req) => {
-      return (isCreator(req) || isAdmin(req));
-    }
+    delete: req => {
+      return isCreator(req) || isAdmin(req);
+    },
   },
   upload: {
     staticURL: 'https://r2-citizencat-data.citizenwiki.cn/cms-assets',
@@ -78,7 +76,7 @@ const Media: CollectionConfig = {
         width: 100,
         height: 100,
         position: 'centre',
-      }
+      },
     ],
     adminThumbnail: 'thumbnail',
     mimeTypes: ['image/*'],
@@ -122,7 +120,7 @@ const Media: CollectionConfig = {
       name: 'license',
       type: 'select',
       options: [
-        { label: 'RSI', value: 'RSI'},
+        { label: 'RSI', value: 'RSI' },
         { label: 'CC-BY', value: 'CC-BY' },
         { label: 'CC-BY-SA', value: 'CC-BY-SA' },
         { label: 'CC-BY-NC', value: 'CC-BY-NC' },

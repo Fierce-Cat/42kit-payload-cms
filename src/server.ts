@@ -5,8 +5,8 @@ import https from 'https';
 
 import { upvoteConsumer } from './rabbitmq/votingServices'; // Import the consumer setup function
 
-
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 const app = express();
 
 // Redirect root to Admin panel
@@ -42,7 +42,7 @@ const start = async () => {
   } else {
     // Add your own express routes here
     const port = process.env.PORT || 3000;
-    app.listen(port,() => {
+    app.listen(port, () => {
       console.log(`Payload Server running on port ${port}`);
     });
   }

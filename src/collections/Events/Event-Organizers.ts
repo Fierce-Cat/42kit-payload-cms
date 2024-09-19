@@ -1,14 +1,12 @@
-import payload from 'payload';
 import type {
   CollectionConfig,
   CollectionAfterChangeHook,
   CollectionAfterDeleteHook,
-  CollectionBeforeValidateHook
+  CollectionBeforeValidateHook,
 } from 'payload/types';
 import { APIError } from 'payload/errors';
-import { generateId } from '../../utilities/GenerateMeta';
 import type { Access } from 'payload/config';
-import type { User, Event } from '../../payload-types';
+import type { Event } from '../../payload-types';
 
 import { isAdmin } from '../../access/isAdmin';
 
@@ -20,16 +18,17 @@ const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation, re
   const event_id = doc.event_id.id ? doc.event_id.id : doc.event_id;
   const user_id = doc.user_id.id ? doc.user_id.id : doc.user_id;
 
-  const event = await req.payload.findByID({
+  const event = (await req.payload.findByID({
     req,
     collection: 'events',
     id: event_id,
-  }) as unknown as Event;
+  })) as unknown as Event;
 
   // organizer objects
   if (!event.organizers) {
     event.organizers = [];
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const organizerIds = event.organizers.map((organizer: any) => organizer.id);
   organizerIds.push(doc.id);
 
@@ -38,6 +37,7 @@ const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation, re
     event.organizing_users = [];
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const organizingUserIds = event.organizing_users.map((user: any) => user.id);
   organizingUserIds.push(user_id);
 
@@ -54,20 +54,19 @@ const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation, re
   return doc;
 };
 
-const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, id, req }) => {
-
+const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, req }) => {
   const event_id = doc.event_id.id ? doc.event_id.id : doc.event_id;
   const user_id = doc.user_id.id ? doc.user_id.id : doc.user_id;
 
-
-  const event = await req.payload.findByID({
+  const event = (await req.payload.findByID({
     req,
     collection: 'events',
     id: event_id,
-  }) as unknown as Event;
+  })) as unknown as Event;
 
   const organizerIds = [];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   event.organizing_users.forEach((organizing_users: any) => {
     if (organizing_users.id !== user_id) {
       organizerIds.push(organizing_users.id);
@@ -101,8 +100,8 @@ const checkOrganizerRecord: CollectionBeforeValidateHook = async ({
         },
         user_id: {
           equals: data.user_id,
-        }
-      }
+        },
+      },
     });
 
     if (organizer.totalDocs > 0) {
@@ -114,8 +113,7 @@ const checkOrganizerRecord: CollectionBeforeValidateHook = async ({
 };
 
 const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
-  if (!user)
-  {
+  if (!user) {
     return false;
   }
   if (isAdmin) {
@@ -205,7 +203,7 @@ const EventOrganizers: CollectionConfig = {
         en: 'Description',
       },
       type: 'textarea',
-    }
+    },
   ],
 };
 

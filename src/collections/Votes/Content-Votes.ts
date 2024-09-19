@@ -1,5 +1,4 @@
 import { CollectionConfig } from 'payload/types';
-import { isAdmin } from '../../access/isAdmin';
 import { generateCreatedBy } from '../../utilities/GenerateMeta';
 import { updateStats, validateVote } from './utilities/statsHooks';
 
@@ -26,8 +25,10 @@ const ContentVotes: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       required: true,
-      access:{
-        update: () => { return false; },
+      access: {
+        update: () => {
+          return false;
+        },
       },
       admin: { position: 'sidebar' },
     },
@@ -37,8 +38,10 @@ const ContentVotes: CollectionConfig = {
       relationTo: ['events'],
       required: true,
       access: {
-        update: () => { return false; }
-      }
+        update: () => {
+          return false;
+        },
+      },
     },
     {
       name: 'type',
@@ -49,19 +52,21 @@ const ContentVotes: CollectionConfig = {
         { label: 'Star', value: 'star' },
       ],
       access: {
-        update: () => { return false; }
-      }
+        update: () => {
+          return false;
+        },
+      },
     },
     {
       name: 'value',
       type: 'number',
       required: true,
-      validate: (value) => {
+      validate: value => {
         if (value < 0 || value > 5) {
           return 'Value must be between 0 and 5';
         }
         return true;
-      }
+      },
     },
   ],
   endpoints: [
@@ -73,14 +78,14 @@ const ContentVotes: CollectionConfig = {
           collection: 'content-votes',
           where: {
             value: {
-              equals: 1
-            }
+              equals: 1,
+            },
           },
         });
         res.status(200).send('All votes deleted');
-      }
-    }
-  ]
+      },
+    },
+  ],
 };
 
 export default ContentVotes;

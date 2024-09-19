@@ -2,7 +2,8 @@ import { AMQPClient } from '@cloudamqp/amqp-client';
 import payload from 'payload';
 
 let consumerInitialized = false; // Flag to track if the consumer is already initialized
-const amqpUrl = process.env.AMQP_URL || 'amqp://user:password@localhost:5672';
+const amqpUrl =
+  'amqp://cCS4Twv3YfxQl5OX:BdejSsThKMwH69R9BmBUGjtJeLuKHYzH@rabbitmq-42kit.olisar.space:5672';
 
 export async function upvoteConsumer() {
   if (consumerInitialized) {
@@ -20,11 +21,11 @@ export async function upvoteConsumer() {
     {
       noAck: false,
     },
-    async (message) => {
+    async message => {
       try {
         const data = JSON.parse(message.bodyToString());
 
-        const { contentId, statId, value } = data;
+        const { contentId, statId } = data;
 
         const countData = await payload.count({
           collection: 'content-votes',
@@ -55,7 +56,7 @@ export async function upvoteConsumer() {
         console.error('Error processing message:', error);
         message.nack();
       }
-    }
+    },
   );
 
   consumerInitialized = true; // Set the flag to true after initializing the consumer

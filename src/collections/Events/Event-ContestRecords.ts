@@ -104,18 +104,6 @@ const isUserParticipated: CollectionBeforeValidateHook = async ({
   }
 };
 
-// Check if the posting user_id is the same as the logged in user
-const checkIsCurrentUser: CollectionBeforeValidateHook = async ({
-  data, // incoming data to update or create with'
-  req: { user },
-}) => {
-  if (data && data.user_id !== user.id) {
-    // throw new Forbidden
-    throw new APIError('You can only register event for yourself.', 403);
-  }
-  return data;
-};
-
 const isCreatedBy: Access = ({ req: { user } }) => {
   if (user) {
     return {
@@ -166,7 +154,7 @@ const isEventOrganizerOrAdminFieldLevel: FieldAccess<
   },
   unknown,
   User
-> = ({ req: { user }, id, doc }) => {
+> = ({ req: { user }, doc }) => {
   if (user && doc) {
     if (checkRole(['admin'], user)) {
       return true;
@@ -199,7 +187,7 @@ const isEventOrganizerOrAdminFieldLevel: FieldAccess<
   }
 };
 
-const recordReadAccess: Access = ({ req: { user } }) => {
+const recordReadAccess: Access = () => {
   return {
     or: [
       // all records are public

@@ -2,6 +2,8 @@ import { CollectionBeforeChangeHook } from 'payload/types';
 import { CollectionAfterChangeHook } from 'payload/types';
 import { publishToQueue } from '../../../rabbitmq/publisher';
 
+import type { ContentVote } from '../../../payload-types';
+
 // This hook is used to validate the vote before it is created or updated.
 export const validateVote: CollectionBeforeChangeHook = async ({ operation, data, req }) => {
   if (operation === 'create') {
@@ -104,7 +106,7 @@ export const updateStats: CollectionAfterChangeHook = ({ operation, doc, req }) 
       }
 
       // If the stats document exists, update the stats based on the type of vote
-      const stat = stats.docs[0] as any;
+      const stat = stats.docs[0] as unknown as ContentVote;
 
       // Check if the vote's type is equal to stat's type
       if (type !== stat.type) {
