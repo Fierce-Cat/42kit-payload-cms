@@ -40,23 +40,23 @@ export default buildConfig({
     bundler: webpackBundler(), // bundler-config
     webpack: (config) => {
       return {
-          ...config,
-          resolve: {
-              ...config.resolve,
-              alias: {
-                  ...config.resolve.alias,
-                  // publitio_js_sdk: path.resolve(__dirname, "../mock.js"),
-                  // "fs-extra": path.resolve(__dirname, "../mock.js"),
-              },
-              fallback: {
-                  ...config.resolve.fallback,
-                  fs: false,
-                  stream: false,
-                  constants: false,
-                  assert: false,
-                  util: false,
-              },
-          },
+        ...config,
+        resolve: {
+            ...config.resolve,
+            alias: {
+                ...config.resolve.alias,
+                // publitio_js_sdk: path.resolve(__dirname, "../mock.js"),
+                // "fs-extra": path.resolve(__dirname, "../mock.js"),
+            },
+            fallback: {
+              ...config.resolve.fallback,
+              fs: false,
+              stream: false,
+              constants: false,
+              assert: false,
+              util: false,
+            },
+        },
       };
   },
   },

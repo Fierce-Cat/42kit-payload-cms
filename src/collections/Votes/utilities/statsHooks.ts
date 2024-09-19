@@ -1,6 +1,6 @@
 import { CollectionBeforeChangeHook } from 'payload/types'
 import { CollectionAfterChangeHook } from 'payload/types'
-import payload from 'payload'
+import { publishToQueue } from '../../../rabbitmq/publisher'
 
 // This hook is used to validate the vote before it is created or updated.
 export const validateVote: CollectionBeforeChangeHook = async ({ operation, data, req }) => {
@@ -83,78 +83,47 @@ export const validateVote: CollectionBeforeChangeHook = async ({ operation, data
 
 // This hook is used to update the stats of the content after a vote is created or updated.
 // The stats are stored in the ContentStats collection.
-export const updateStats: CollectionAfterChangeHook = async ({ operation, doc, req }) => {
-  if (operation === 'create') {
-    // If a new vote is created, update the stats of the content
-    const cid = doc.content.value.id ?? doc.content.value;
-    const { type } = doc;
+export const updateStats: CollectionAfterChangeHook = ({ operation, doc, req }) => {
+  if (operation !== 'create') return;
 
-    try {
-      // Find the stats document for the content
-      const stats = await req.payload.find({
-        req,
-        collection: 'content-stats',
-        where: {
-          'content.value': {
-            equals: cid,
-          },
-        },
-      });
+  const cid = doc.content.value.id ?? doc.content.value;
+  const { type } = doc;
 
-      if (stats.totalDocs > 0) {
-        // If the stats document exists, update the stats based on the type of vote
-        const stat = stats.docs[0] as any;
-        // Check if the vote's type is equal to stat's type
-        if (type === stat.type) {
-          if (type === 'upvote') {
-            // Update the total count and the sum of votes
-            const countData = await payload.count({
-              req,
-              collection: 'content-votes',
-              where: {
-                'content.value': {
-                  equals: cid,
-                },
-                type: {
-                  equals: 'upvote',
-                },
-              },
-            });
-            stat.total_count = countData.totalDocs;
-            stat.votes_sum = countData.totalDocs;
-          } else if (type === 'star') {
-            // Update the total count and the average and distribution of stars
-            stat.total_count += 1;
-            stat.stars_data[doc.value] += 1;
-            // Weighted average
-            stat.stars_average = (
-              stat.stars_data['1'] * stat.stars_weight['1'] +
-              stat.stars_data['2'] * stat.stars_weight['2'] +
-              stat.stars_data['3'] * stat.stars_weight['3'] +
-              stat.stars_data['4'] * stat.stars_weight['4'] +
-              stat.stars_data['5'] * stat.stars_weight['5']
-            ) / stat.total_count;
-          }
-          // Update the stats document
-          await req.payload.update({
-            req,
-            collection: 'content-stats',
-            id: stat.id,
-            data: {
-              total_count: stat.total_count,
-              votes_sum: stat.votes_sum,
-              star_average: stat.star_average,
-              star_data: stat.star_data,
-            }
-          });
-        } else {
-          throw new Error('Type mismatch');
-        }
-      } else {
-        throw new Error('Stats document not found');
-      }
-    } catch (error) {
-      console.error(error);
+  // Find the stats document for the content
+  req.payload.find({
+    req,
+    collection: 'content-stats',
+    where: {
+      'content.value': {
+        equals: cid,
+      },
+    },
+  }).then(stats => {
+    if (stats.totalDocs === 0) {
+      throw new Error('Stats document not found');
     }
-  }
+
+    // If the stats document exists, update the stats based on the type of vote
+    const stat = stats.docs[0] as any;
+
+    // Check if the vote's type is equal to stat's type
+    if (type !== stat.type) {
+      throw new Error('Type mismatch');
+    }
+
+    if (type === 'upvote') {
+      publishToQueue({
+        contentId: cid,
+        statId: stat.id,
+        voteId: doc.id,
+        value: 1,
+        type: 'upvote',
+      },
+      'upvote-queue');
+    } else if (type === 'star') {
+      // Handle 'star' type if needed
+    }
+  }).catch(error => {
+    console.error(error);
+  });
 };

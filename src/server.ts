@@ -3,6 +3,9 @@ import payload from 'payload'
 import fs from 'fs'
 import https from 'https'
 
+import { upvoteConsumer } from './rabbitmq/votingServices'; // Import the consumer setup function
+
+
 require('dotenv').config()
 const app = express()
 
@@ -20,6 +23,9 @@ const start = async () => {
       payload.logger.info(`Payload Admin URL: ${payload.getAdminURL()}`)
     },
   })
+
+  // Start the consumer
+  await upvoteConsumer();
 
   if (process.env.LOCAL_HTTPS === 'true') {
     const key = fs.readFileSync('./local-dev.citizenwiki.cn-key.pem') // Path to your SSL key
