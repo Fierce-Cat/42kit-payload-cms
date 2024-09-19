@@ -30,6 +30,8 @@ export interface Config {
     'event-contest-records': EventContestRecord;
     'event-contest-scores': EventContestScore;
     media: Media;
+    'content-votes': ContentVote;
+    'content-stats': ContentStat;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
@@ -148,6 +150,7 @@ export interface Event {
   date_started: string;
   date_ended: string;
   timezone: string;
+  stat?: (string | null) | ContentStat;
   content?:
     | {
         [k: string]: unknown;
@@ -157,6 +160,21 @@ export interface Event {
     | number
     | boolean
     | null;
+  rich_content?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   geo_address?: string | null;
   online_url?: string | null;
   num_participants: number;
@@ -192,6 +210,41 @@ export interface EventCategory {
   id: string;
   name: string;
   slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "content-stats".
+ */
+export interface ContentStat {
+  id: string;
+  content: {
+    relationTo: 'events';
+    value: string | Event;
+  };
+  type: 'upvote' | 'star';
+  total_count: number;
+  votes_sum: number;
+  stars_average: number;
+  stars_data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  stars_weight:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -273,6 +326,22 @@ export interface EventContestScore {
       | null;
     comment?: string | null;
   };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "content-votes".
+ */
+export interface ContentVote {
+  id: string;
+  createdBy: string | User;
+  content: {
+    relationTo: 'events';
+    value: string | Event;
+  };
+  type: 'upvote' | 'star';
+  value: number;
   updatedAt: string;
   createdAt: string;
 }
