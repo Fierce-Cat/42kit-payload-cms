@@ -1,5 +1,5 @@
 module.exports = {
-  extends: ['@payloadcms'],
+  extends: ['@payloadcms', 'love', 'eslint:recommended'],
   overrides: [
     {
       extends: ['plugin:@typescript-eslint/disable-type-checked'],
@@ -15,8 +15,8 @@ module.exports = {
       files: ['package.json', 'tsconfig.json'],
       rules: {
         'jest/no-if': 'off',
-        'perfectionist/sort-array-includes': 'true',
-        'perfectionist/sort-astro-attributes': 'true',
+        'perfectionist/sort-array-includes': 'false',
+        'perfectionist/sort-astro-attributes': 'false',
         'perfectionist/sort-classes': 'off',
         'perfectionist/sort-enums': 'off',
         'perfectionist/sort-exports': 'off',
@@ -25,8 +25,8 @@ module.exports = {
         'perfectionist/sort-jsx-props': 'off',
         'perfectionist/sort-keys': 'off',
         'perfectionist/sort-maps': 'off',
-        'perfectionist/sort-named-exports': 'true',
-        'perfectionist/sort-named-imports': 'true',
+        'perfectionist/sort-named-exports': 'false',
+        'perfectionist/sort-named-imports': 'false',
         'perfectionist/sort-object-types': 'off',
         'perfectionist/sort-objects': 'off',
         'perfectionist/sort-svelte-attributes': 'off',
@@ -36,11 +36,18 @@ module.exports = {
     },
   ],
   root: true,
-  parser: '@typescript-eslint/parser',
+  parser: '@babel/eslint-parser',
   parserOptions: {
+    ecmaVersion: 2020,
+    sourceType: 'module',
     project: './tsconfig.json',
+    ecmaFeatures: {
+      jsx: true,
+      modules: true,
+      experimentalObjectRestSpread: true,
+    },
   },
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'plugin:@typescript-eslint/recommended'],
   rules: {
     indent: ['error', 2, { SwitchCase: 1 }],
     'jest/no-if': 'off',
@@ -51,4 +58,14 @@ module.exports = {
     semi: 'error',
     'space-in-parens': 'error',
   },
+  ignorePatterns: [
+    '.git/',
+    'coverage/',
+    'dist/',
+    'build/',
+    'temp/',
+    'node_modules/',
+    'public/',
+    'scripts/',
+  ],
 };
