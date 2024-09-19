@@ -1,7 +1,7 @@
-import { CollectionConfig } from 'payload/types'
-import { isAdmin } from '../../access/isAdmin'
-import { generateCreatedBy } from '../../utilities/GenerateMeta'
-import { updateStats, validateVote } from './utilities/statsHooks'
+import { CollectionConfig } from 'payload/types';
+import { isAdmin } from '../../access/isAdmin';
+import { generateCreatedBy } from '../../utilities/GenerateMeta';
+import { updateStats, validateVote } from './utilities/statsHooks';
 
 const ContentVotes: CollectionConfig = {
   slug: 'content-votes',
@@ -27,7 +27,7 @@ const ContentVotes: CollectionConfig = {
       relationTo: 'users',
       required: true,
       access:{
-        update: () => { return false },
+        update: () => { return false; },
       },
       admin: { position: 'sidebar' },
     },
@@ -37,7 +37,7 @@ const ContentVotes: CollectionConfig = {
       relationTo: ['events'],
       required: true,
       access: {
-        update: () => { return false }
+        update: () => { return false; }
       }
     },
     {
@@ -49,7 +49,7 @@ const ContentVotes: CollectionConfig = {
         { label: 'Star', value: 'star' },
       ],
       access: {
-        update: () => { return false }
+        update: () => { return false; }
       }
     },
     {
@@ -58,9 +58,9 @@ const ContentVotes: CollectionConfig = {
       required: true,
       validate: (value) => {
         if (value < 0 || value > 5) {
-          return 'Value must be between 0 and 5'
+          return 'Value must be between 0 and 5';
         }
-        return true
+        return true;
       }
     },
   ],
@@ -81,6 +81,6 @@ const ContentVotes: CollectionConfig = {
       }
     }
   ]
-}
+};
 
-export default ContentVotes
+export default ContentVotes;

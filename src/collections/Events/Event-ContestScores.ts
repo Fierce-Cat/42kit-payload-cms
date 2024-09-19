@@ -1,20 +1,20 @@
-import payload from 'payload'
-import { Forbidden, APIError } from 'payload/errors'
-import type { Access } from 'payload/config'
-import type { CollectionConfig, CollectionBeforeValidateHook, CollectionAfterChangeHook  } from 'payload/types'
+import payload from 'payload';
+import { Forbidden, APIError } from 'payload/errors';
+import type { Access } from 'payload/config';
+import type { CollectionConfig, CollectionBeforeValidateHook, CollectionAfterChangeHook } from 'payload/types';
 
-import { generateId, generateCreatedBy } from '../../utilities/GenerateMeta'
+import { generateId, generateCreatedBy } from '../../utilities/GenerateMeta';
 
-import { isUser } from '../../access/isUser'
-import { isAdmin } from '../../access/isAdmin'
+import { isUser } from '../../access/isUser';
+import { isAdmin } from '../../access/isAdmin';
 
 // Count the number of participants in the event
 const ranking: CollectionAfterChangeHook = async ({
   doc,
   operation,
 }) => {
-  return doc
-}
+  return doc;
+};
 
 const checkExistRecord: CollectionBeforeValidateHook = async ({
   data,
@@ -25,10 +25,10 @@ const checkExistRecord: CollectionBeforeValidateHook = async ({
     const record = await payload.findByID({
       collection: 'event-contest-records',
       id: data.event_contest_record_id,
-    })
+    });
 
     if (!record) {
-      throw new APIError('Record not found.', 404)
+      throw new APIError('Record not found.', 404);
     }
 
     const score = await payload.find({
@@ -41,28 +41,28 @@ const checkExistRecord: CollectionBeforeValidateHook = async ({
           equals: user.id,
         }
       }
-    })
+    });
 
     if (score.totalDocs > 0) {
-      throw new APIError('You have already scored this record.', 403)
+      throw new APIError('You have already scored this record.', 403);
     }
   }
 
-  return data
-}
+  return data;
+};
 
-const updateRecordScore: CollectionAfterChangeHook  = async ({
+const updateRecordScore: CollectionAfterChangeHook = async ({
   doc,
   operation,
   req,
 }) => {
   if (operation === 'create' || operation === 'update') {
-    const record_id = doc.event_contest_record_id.id ? doc.event_contest_record_id.id : doc.event_contest_record_id
+    const record_id = doc.event_contest_record_id.id ? doc.event_contest_record_id.id : doc.event_contest_record_id;
     const record = await req.payload.findByID({
       req,
       collection: 'event-contest-records',
       id: record_id,
-    }) as any
+    }) as any;
 
     const scores = await req.payload.find({
       req,
@@ -72,23 +72,23 @@ const updateRecordScore: CollectionAfterChangeHook  = async ({
           equals: record_id,
         }
       }
-    })
+    });
 
-    let total = 0
+    let total = 0;
     scores.docs.forEach((score: any) => {
-      total += score.score_info.total
-    })
+      total += score.score_info.total;
+    });
 
-    let scoredBy = []
+    const scoredBy = [];
     if (record.race.scoredBy) {
       for (let i = 0; i < record.race.scoredBy.length; i++) {
-        scoredBy.push(record.race.scoredBy[i].id)
+        scoredBy.push(record.race.scoredBy[i].id);
       }
     }
 
-    scoredBy.push(doc.createdBy.id)
+    scoredBy.push(doc.createdBy.id);
 
-    record.score = total
+    record.score = total;
     await req.payload.update({
       req,
       collection: 'event-contest-records',
@@ -99,10 +99,10 @@ const updateRecordScore: CollectionAfterChangeHook  = async ({
           scoredBy,
         },
       },
-    })
+    });
   }
-  return doc
-}
+  return doc;
+};
 
 // Check if the event is published and registration is open
 const checkEventStatus: CollectionBeforeValidateHook = async ({
@@ -113,39 +113,39 @@ const checkEventStatus: CollectionBeforeValidateHook = async ({
     const event = await payload.findByID({
       collection: 'events',
       id: data.event_id,
-    })
+    });
 
     if (event.status !== 'published') {
-      throw new Forbidden
+      throw new Forbidden;
     }
   }
 
-  return data
-}
+  return data;
+};
 
 const isUserParticipated: CollectionBeforeValidateHook = async ({
   data, // incoming data to update or create with'
   operation, // 'create' or 'update'
 }) => {
   if (operation === 'create') {
-  const participant = await payload.find({
-    collection: 'event-participants',
-    where: {
-      event_id: {
-        equals: data.event_id,
-      },
-      user_id: {
-        equals: data.user_id,
+    const participant = await payload.find({
+      collection: 'event-participants',
+      where: {
+        event_id: {
+          equals: data.event_id,
+        },
+        user_id: {
+          equals: data.user_id,
+        }
       }
-    }
-  })
+    });
 
-  if (participant.totalDocs === 1) {
-    return data
+    if (participant.totalDocs === 1) {
+      return data;
+    }
   }
-}
-  throw new APIError('You have not register this event yet.', 403)
-}
+  throw new APIError('You have not register this event yet.', 403);
+};
 
 // Check if the posting user_id is the same as the logged in user
 const checkIsCurrentUser: CollectionBeforeValidateHook = async ({
@@ -154,34 +154,34 @@ const checkIsCurrentUser: CollectionBeforeValidateHook = async ({
 }) => {
   if (data.user_id !== user.id) {
     // throw new Forbidden
-    throw new APIError('You can only register event for yourself.', 403)
+    throw new APIError('You can only register event for yourself.', 403);
   }
-  return data
-}
+  return data;
+};
 
 const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
   if (!user)
   {
-    return false
+    return false;
   }
   if (isAdmin) {
-    return true
+    return true;
   }
   return {
     or: [
-        {
-          'event_id.organizing_users': {
-            equals: user.id,
-          }
-        },
-        {
-          'event_id.createdBy': {
-            equals: user.id,
-          }
+      {
+        'event_id.organizing_users': {
+          equals: user.id,
         }
-      ]
-  }
-}
+      },
+      {
+        'event_id.createdBy': {
+          equals: user.id,
+        }
+      }
+    ]
+  };
+};
 
 const isEventOrganizer: Access = ({ req: { user } }) => {
   if (user) {
@@ -203,21 +203,21 @@ const isEventOrganizer: Access = ({ req: { user } }) => {
           }
         }
       ]
-    }
+    };
   }
-}
+};
 
 const isCreatedBy: Access = ({ req: { user } }) => {
   if (!user)
   {
-    return false
+    return false;
   }
   return {
     createdBy: {
       equals: user.id,
     },
-  }
-}
+  };
+};
 
 const EventContestScores: CollectionConfig = {
   slug: 'event-contest-scores',
@@ -234,46 +234,46 @@ const EventContestScores: CollectionConfig = {
   access: {
     create: (req) => {
       if (isAdmin(req)) {
-        return true
+        return true;
       }
       if (isEventOrganizer(req)) {
-        return true
+        return true;
       }
       if (isCreatedBy(req)) {
-        return true
+        return true;
       }
     },
     read: (req) => {
       if (isAdmin(req)) {
-        return true
+        return true;
       }
       if (isEventOrganizer(req)) {
-        return true
+        return true;
       }
       if (isCreatedBy(req)) {
-        return true
+        return true;
       }
     },
     update: (req) => {
       if (isAdmin(req)) {
-        return true
+        return true;
       }
       if (isEventOrganizer(req)) {
-        return true
+        return true;
       }
       if (isCreatedBy(req)) {
-        return true
+        return true;
       }
     },
     delete: (req) => {
       if (isAdmin(req)) {
-        return true
+        return true;
       }
       if (isEventOrganizer(req)) {
-        return true
+        return true;
       }
       if (isCreatedBy(req)) {
-        return true
+        return true;
       }
     },
   },
@@ -386,6 +386,6 @@ const EventContestScores: CollectionConfig = {
       ],
     },
   ],
-}
+};
 
-export default EventContestScores
+export default EventContestScores;

@@ -1,8 +1,7 @@
-import type { CollectionConfig, CollectionAfterChangeHook } from 'payload/types'
-import { generateId } from '../../utilities/GenerateMeta'
+import type { CollectionConfig } from 'payload/types';
 
 // Access Control
-import { isAdmin, isAdminFieldLevel } from '../../access/isAdmin'
+import { isAdmin } from '../../access/isAdmin';
 
 const EventCategories: CollectionConfig = {
   slug: 'event-categories',
@@ -20,15 +19,15 @@ const EventCategories: CollectionConfig = {
     },
   },
   access: {
-    create: (req) => {
-      return isAdmin(req)
+    create: req => {
+      return isAdmin(req);
     },
     read: () => true,
-    update: (req) => {
-      return isAdmin(req)
+    update: req => {
+      return isAdmin(req);
     },
-    delete: (req) => {
-      return isAdmin(req)
+    delete: req => {
+      return isAdmin(req);
     },
   },
   fields: [
@@ -55,6 +54,6 @@ const EventCategories: CollectionConfig = {
   hooks: {
     beforeChange: [],
   },
-}
+};
 
-export default EventCategories
+export default EventCategories;

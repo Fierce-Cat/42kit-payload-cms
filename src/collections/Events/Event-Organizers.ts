@@ -1,24 +1,24 @@
-import payload from 'payload'
+import payload from 'payload';
 import type {
   CollectionConfig,
   CollectionAfterChangeHook,
   CollectionAfterDeleteHook,
   CollectionBeforeValidateHook
-} from 'payload/types'
-import { APIError } from 'payload/errors'
-import { generateId } from '../../utilities/GenerateMeta'
-import type { Access } from 'payload/config'
-import type { User, Event } from '../../payload-types'
+} from 'payload/types';
+import { APIError } from 'payload/errors';
+import { generateId } from '../../utilities/GenerateMeta';
+import type { Access } from 'payload/config';
+import type { User, Event } from '../../payload-types';
 
-import { isAdmin } from '../../access/isAdmin'
+import { isAdmin } from '../../access/isAdmin';
 
 const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation, req }) => {
   if (operation !== 'create') {
-    return doc
+    return doc;
   }
 
-  const event_id = doc.event_id.id ? doc.event_id.id : doc.event_id
-  const user_id = doc.user_id.id ? doc.user_id.id : doc.user_id
+  const event_id = doc.event_id.id ? doc.event_id.id : doc.event_id;
+  const user_id = doc.user_id.id ? doc.user_id.id : doc.user_id;
 
   const event = await req.payload.findByID({
     req,
@@ -28,18 +28,18 @@ const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation, re
 
   // organizer objects
   if (!event.organizers) {
-    event.organizers = []
+    event.organizers = [];
   }
-  const organizerIds = event.organizers.map((organizer: any) => organizer.id)
-  organizerIds.push(doc.id)
+  const organizerIds = event.organizers.map((organizer: any) => organizer.id);
+  organizerIds.push(doc.id);
 
   // user objects
   if (!event.organizing_users) {
-    event.organizing_users = []
+    event.organizing_users = [];
   }
 
-  const organizingUserIds = event.organizing_users.map((user: any) => user.id)
-  organizingUserIds.push(user_id)
+  const organizingUserIds = event.organizing_users.map((user: any) => user.id);
+  organizingUserIds.push(user_id);
 
   await req.payload.update({
     req,
@@ -49,15 +49,15 @@ const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation, re
       organizers: organizerIds,
       organizing_users: organizingUserIds,
     },
-  })
+  });
 
-  return doc
-}
+  return doc;
+};
 
 const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, id, req }) => {
 
-  const event_id = doc.event_id.id ? doc.event_id.id : doc.event_id
-  const user_id = doc.user_id.id ? doc.user_id.id : doc.user_id
+  const event_id = doc.event_id.id ? doc.event_id.id : doc.event_id;
+  const user_id = doc.user_id.id ? doc.user_id.id : doc.user_id;
 
 
   const event = await req.payload.findByID({
@@ -66,13 +66,13 @@ const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, id, req })
     id: event_id,
   }) as unknown as Event;
 
-  let organizerIds = []
+  const organizerIds = [];
 
   event.organizing_users.forEach((organizing_users: any) => {
     if (organizing_users.id !== user_id) {
-      organizerIds.push(organizing_users.id)
+      organizerIds.push(organizing_users.id);
     }
-  })
+  });
 
   await req.payload.update({
     req,
@@ -81,10 +81,10 @@ const removeEventOrganizer: CollectionAfterDeleteHook = async ({ doc, id, req })
     data: {
       organizing_users: organizerIds,
     },
-  })
+  });
 
-  return doc
-}
+  return doc;
+};
 
 const checkOrganizerRecord: CollectionBeforeValidateHook = async ({
   data, // incoming data to update or create with'
@@ -92,41 +92,41 @@ const checkOrganizerRecord: CollectionBeforeValidateHook = async ({
   req,
 }) => {
   if (operation === 'create') {
-  const organizer = await req.payload.find({
-    req,
-    collection: 'event-organizers',
-    where: {
-      event_id: {
-        equals: data.event_id,
-      },
-      user_id: {
-        equals: data.user_id,
+    const organizer = await req.payload.find({
+      req,
+      collection: 'event-organizers',
+      where: {
+        event_id: {
+          equals: data.event_id,
+        },
+        user_id: {
+          equals: data.user_id,
+        }
       }
+    });
+
+    if (organizer.totalDocs > 0) {
+      throw new APIError('You have already assigned this user for this event', 400);
     }
-  })
-
-  if (organizer.totalDocs > 0) {
-    throw new APIError('You have already assigned this user for this event', 400)
   }
-}
 
-  return data
-}
+  return data;
+};
 
 const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
   if (!user)
   {
-    return false
+    return false;
   }
   if (isAdmin) {
-    return true
+    return true;
   }
   return {
     'event_id.createdBy': {
       equals: user.id,
     },
-  }
-}
+  };
+};
 
 const EventOrganizers: CollectionConfig = {
   slug: 'event-organizers',
@@ -207,6 +207,6 @@ const EventOrganizers: CollectionConfig = {
       type: 'textarea',
     }
   ],
-}
+};
 
-export default EventOrganizers
+export default EventOrganizers;

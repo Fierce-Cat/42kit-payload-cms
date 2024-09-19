@@ -1,5 +1,5 @@
-import { CollectionConfig } from 'payload/types'
-import { slugField } from '../../fields/slug'
+import { CollectionConfig } from 'payload/types';
+import { slugField } from '../../fields/slug';
 
 const StarSystems: CollectionConfig = {
   slug: 'star-systems',
@@ -103,6 +103,6 @@ const StarSystems: CollectionConfig = {
     }, // 星系分类结束
     slugField(), // 星系别名
   ],
-}
+};
 
-export default StarSystems
+export default StarSystems;

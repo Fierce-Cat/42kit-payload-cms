@@ -1,5 +1,5 @@
-import { CollectionConfig } from 'payload/types'
-import { slugField } from '../fields/slug'
+import { CollectionConfig } from 'payload/types';
+import { slugField } from '../fields/slug';
 
 const Posts: CollectionConfig = {
   slug: 'posts',
@@ -14,6 +14,6 @@ const Posts: CollectionConfig = {
     },
     slugField(),
   ],
-}
+};
 
-export default Posts
+export default Posts;

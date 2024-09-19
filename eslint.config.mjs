@@ -92,6 +92,7 @@ const flatConfig = [
       '**/node_modules/',
       '**/public/',
       '**/scripts/',
+      '**/src/migrations/',
     ],
   },
 ];

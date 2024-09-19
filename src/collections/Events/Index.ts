@@ -1,13 +1,13 @@
-import payload from 'payload'
-import type { CollectionConfig, CollectionAfterChangeHook } from 'payload/types'
-import type { Access } from 'payload/config'
-import type { User } from '../../payload-types'
-import { generateCreatedBy, generateRandomSlug } from '../../utilities/GenerateMeta'
+import payload from 'payload';
+import type { CollectionConfig, CollectionAfterChangeHook } from 'payload/types';
+import type { Access } from 'payload/config';
+import type { User } from '../../payload-types';
+import { generateCreatedBy, generateRandomSlug } from '../../utilities/GenerateMeta';
 
 // Access Control
-import { isAdmin, isAdminFieldLevel } from '../../access/isAdmin'
-import { isAdminOrSelf } from '../../access/isAdminOrSelf'
-import { isUser } from '../../access/isUser'
+import { isAdmin, isAdminFieldLevel } from '../../access/isAdmin';
+import { isAdminOrSelf } from '../../access/isAdminOrSelf';
+import { isUser } from '../../access/isUser';
 
 const isEventOrganizer: Access = ({ req: { user } }) => {
   if (user) {
@@ -15,9 +15,9 @@ const isEventOrganizer: Access = ({ req: { user } }) => {
       'organizing_users': {
         equals: user.id,
       }
-    }
+    };
   }
-}
+};
 
 const isCreatedBy: Access = ({ req: { user } }) => {
   if (user) {
@@ -25,14 +25,14 @@ const isCreatedBy: Access = ({ req: { user } }) => {
       createdBy: {
         equals: user.id,
       },
-    }
+    };
   }
-}
+};
 
 const createVoteStats: CollectionAfterChangeHook = async ({ doc, req }) => {
   try {
     if (doc.stat) {
-      return
+      return;
     }
 
     const stats = await req.payload.find({
@@ -43,7 +43,7 @@ const createVoteStats: CollectionAfterChangeHook = async ({ doc, req }) => {
           equals: doc.id,
         },
       },
-    })
+    });
 
     if (stats.totalDocs === 0) {
       const res = await req.payload.create({
@@ -56,7 +56,7 @@ const createVoteStats: CollectionAfterChangeHook = async ({ doc, req }) => {
           },
           type: 'upvote',
         },
-      })
+      });
 
       req.payload.update({
         req,
@@ -65,10 +65,10 @@ const createVoteStats: CollectionAfterChangeHook = async ({ doc, req }) => {
         data: {
           stat: res.id,
         },
-      })
+      });
 
     } else {
-      console.log('Stats already exists')
+      console.log('Stats already exists');
       req.payload.update({
         req,
         collection: 'events',
@@ -76,12 +76,12 @@ const createVoteStats: CollectionAfterChangeHook = async ({ doc, req }) => {
         data: {
           stat: stats.docs[0].id,
         },
-      })
+      });
     }
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
-}
+};
 
 
 const Events: CollectionConfig = {
@@ -89,33 +89,33 @@ const Events: CollectionConfig = {
   access: {
     read: (req) => {
       if (isAdmin(req))
-        return true
+        return true;
       if (isCreatedBy(req))
-        return true
+        return true;
       if (isEventOrganizer(req))
-        return true
+        return true;
       return {
         status: {
           equals: 'published',
         }
-      }
+      };
     },
     create: isUser,
     update: (req) => {
       if (isAdmin(req))
-        return true
+        return true;
       if (isCreatedBy(req))
-        return true
+        return true;
       if (isEventOrganizer(req))
-        return true
-      return false
+        return true;
+      return false;
     },
     delete: (req) => {
       if (isAdmin(req))
-        return true
+        return true;
       if (isCreatedBy(req))
-        return true
-      return false
+        return true;
+      return false;
     },
   },
   hooks: {
@@ -138,7 +138,7 @@ const Events: CollectionConfig = {
       method: 'get',
       handler: async (req, res, next) => {
         if (!req.user) {
-          return res.status(401).send('Unauthorized')
+          return res.status(401).send('Unauthorized');
         }
 
         const participations = await payload.find({
@@ -151,14 +151,14 @@ const Events: CollectionConfig = {
               equals: req.params.id
             }
           }
-        })
+        });
 
         if (participations.totalDocs > 0) {
-          return res.status(200).send(participations.docs[0])
+          return res.status(200).send(participations.docs[0]);
         } else {
           return res.status(404).send({
             status: 'not_participated'
-          })
+          });
         }
       },
     },
@@ -179,7 +179,7 @@ const Events: CollectionConfig = {
       access:{
         update: (req) => {
           if (isAdmin(req)) {
-            return true
+            return true;
           }
         },
       },
@@ -689,6 +689,6 @@ const Events: CollectionConfig = {
 
     }
   ],
-}
+};
 
-export default Events
+export default Events;

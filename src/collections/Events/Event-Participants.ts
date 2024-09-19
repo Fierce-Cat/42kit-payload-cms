@@ -1,12 +1,12 @@
-import payload from 'payload'
-import { Forbidden, APIError } from 'payload/errors'
-import type { Access } from 'payload/config'
-import type { CollectionConfig, CollectionAfterChangeHook, CollectionBeforeValidateHook } from 'payload/types'
+import payload from 'payload';
+import { Forbidden, APIError } from 'payload/errors';
+import type { Access } from 'payload/config';
+import type { CollectionConfig, CollectionAfterChangeHook, CollectionBeforeValidateHook } from 'payload/types';
 
-import { generateId, generateCreatedBy } from '../../utilities/GenerateMeta'
+import { generateId, generateCreatedBy } from '../../utilities/GenerateMeta';
 
-import { isUser } from '../../access/isUser'
-import { isAdmin } from '../../access/isAdmin'
+import { isUser } from '../../access/isUser';
+import { isAdmin } from '../../access/isAdmin';
 
 // Count the number of participants in the event
 const countParticipants: CollectionAfterChangeHook = async ({
@@ -32,8 +32,8 @@ const countParticipants: CollectionAfterChangeHook = async ({
         data: {
           num_participants: participants.totalDocs,
         }
-      })
-    })
+      });
+    });
   } else if (operation === 'update') {
     // Count the number of participants in the event
     await req.payload.find({
@@ -52,11 +52,11 @@ const countParticipants: CollectionAfterChangeHook = async ({
         data: {
           num_participants: participants.totalDocs,
         }
-      })
-    })
+      });
+    });
   }
-  return doc
-}
+  return doc;
+};
 
 // Check if the event is published and registration is open
 const checkEventStatus: CollectionBeforeValidateHook = async ({
@@ -67,52 +67,52 @@ const checkEventStatus: CollectionBeforeValidateHook = async ({
     const event = await payload.findByID({
       collection: 'events',
       id: data.event_id,
-    })
+    });
 
     if (event.status !== 'published') {
-      throw new Forbidden
+      throw new Forbidden;
     }
 
     if (event.is_registration_open !== true) {
-      throw new Forbidden
+      throw new Forbidden;
     }
 
     if (event.max_participants !== 0 && event.num_participants >= event.max_participants) {
-      throw new Forbidden
+      throw new Forbidden;
     }
 
     if (new Date(event.date_ended as string) < new Date()) {
-      throw new APIError('Event has ended.', 400)
+      throw new APIError('Event has ended.', 400);
     }
   }
 
-  return data
-}
+  return data;
+};
 
 const checkUserParticipation: CollectionBeforeValidateHook = async ({
   data, // incoming data to update or create with'
   operation, // 'create' or 'update'
 }) => {
   if (operation === 'create') {
-  const participant = await payload.find({
-    collection: 'event-participants',
-    where: {
-      event_id: {
-        equals: data.event_id,
-      },
-      user_id: {
-        equals: data.user_id,
+    const participant = await payload.find({
+      collection: 'event-participants',
+      where: {
+        event_id: {
+          equals: data.event_id,
+        },
+        user_id: {
+          equals: data.user_id,
+        }
       }
+    });
+
+    if (participant.totalDocs > 0) {
+      throw new APIError('You have already registered for this event.', 400);
     }
-  })
-
-  if (participant.totalDocs > 0) {
-    throw new APIError('You have already registered for this event.', 400)
   }
-}
 
-  return data
-}
+  return data;
+};
 
 // Check if the posting user_id is the same as the logged in user
 const checkIsCurrentUser: CollectionBeforeValidateHook = async ({
@@ -121,47 +121,47 @@ const checkIsCurrentUser: CollectionBeforeValidateHook = async ({
 }) => {
   if (data.user_id !== user.id) {
     // throw new Forbidden
-    throw new APIError('You can only register event for yourself.', 403)
+    throw new APIError('You can only register event for yourself.', 403);
   }
-  return data
-}
+  return data;
+};
 
 const isEventCreatorOrAdmin: Access = ({ req: { user } }) => {
   if (!user)
   {
-    return false
+    return false;
   }
   if (isAdmin) {
-    return true
+    return true;
   }
   return {
     'event_id.createdBy': {
       equals: user.id,
     },
-  }
-}
+  };
+};
 
 const isCreatedBy: Access = ({ req: { user } }) => {
   if (!user)
   {
-    return false
+    return false;
   }
   return {
     createdBy: {
       equals: user.id,
     },
-  }
-}
+  };
+};
 
 const participantsReadAccess: Access = (req) => {
-  if (isEventCreatorOrAdmin(req)) return true
+  if (isEventCreatorOrAdmin(req)) return true;
 
   return {
     "event_id.show_participants": {
       equals: true,
     },
-  }
-}
+  };
+};
 
 const EventParticipants: CollectionConfig = {
   slug: 'event-participants',
@@ -179,7 +179,7 @@ const EventParticipants: CollectionConfig = {
     create: isUser,
     read: participantsReadAccess,
     update: (req) => {
-      return (isCreatedBy(req) || isEventCreatorOrAdmin(req))
+      return (isCreatedBy(req) || isEventCreatorOrAdmin(req));
     },
     delete: isEventCreatorOrAdmin,
   },
@@ -331,6 +331,6 @@ const EventParticipants: CollectionConfig = {
       defaultValue: 'registered',
     },
   ],
-}
+};
 
-export default EventParticipants
+export default EventParticipants;

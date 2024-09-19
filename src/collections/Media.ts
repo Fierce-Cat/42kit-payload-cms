@@ -1,28 +1,28 @@
-import { CollectionConfig, CollectionBeforeOperationHook } from 'payload/types'
-import type { Access } from 'payload/config'
+import { CollectionConfig, CollectionBeforeOperationHook } from 'payload/types';
+import type { Access } from 'payload/config';
 
 // Utilities
-import { generateId, generateCreatedBy } from '../utilities/GenerateMeta'
+import { generateId, generateCreatedBy } from '../utilities/GenerateMeta';
 
 // Access Control
-import { isAdmin, isAdminFieldLevel } from '../access/isAdmin'
-import { isUser, isUserFieldLevel } from '../access/isUser'
+import { isAdmin, isAdminFieldLevel } from '../access/isAdmin';
+import { isUser, isUserFieldLevel } from '../access/isUser';
 
 const isCreator: Access = ({ req: { user } }) => {
-  if (!user) return false
+  if (!user) return false;
   return {
     createdBy: {
       equals: user.id,
     },
-  }
-}
+  };
+};
 
 const hasMediaId: Access = ({req, id}) => {
-  if (req.baseUrl !== '/api/media') return true
+  if (req.baseUrl !== '/api/media') return true;
   if (!id)
-    return false
-  return true
-}
+    return false;
+  return true;
+};
 
 // Hooks
 const generateAltName: CollectionBeforeOperationHook = async ({ args }) => {
@@ -31,23 +31,23 @@ const generateAltName: CollectionBeforeOperationHook = async ({ args }) => {
     const parts = files.file.name.split('.');
     files.file.name = `${(Math.random() + 1).toString(36).substring(2)}.${parts[parts.length - 1]}`;
   }
-}
+};
 
 const Media: CollectionConfig = {
   slug: 'media',
   access: {
     create: (req) => {
-      return (isUser(req))
+      return (isUser(req));
     },
     read: (req) => {
-      return (hasMediaId(req) || isAdmin(req) || isCreator(req))
+      return (hasMediaId(req) || isAdmin(req) || isCreator(req));
     },
     update: (req) => {
-      return (isCreator(req) || isAdmin(req))
+      return (isCreator(req) || isAdmin(req));
 
     },
     delete: (req) => {
-      return (isCreator(req) || isAdmin(req))
+      return (isCreator(req) || isAdmin(req));
     }
   },
   upload: {
@@ -142,6 +142,6 @@ const Media: CollectionConfig = {
     beforeOperation: [generateAltName],
     beforeChange: [generateCreatedBy],
   },
-}
+};
 
-export default Media
+export default Media;

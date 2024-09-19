@@ -1,26 +1,26 @@
-import path from 'path'
-import axios from 'axios'
+import path from 'path';
+import axios from 'axios';
 
-import { postgresAdapter } from '@payloadcms/db-postgres'
-import { webpackBundler } from '@payloadcms/bundler-webpack' // bundler-import
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { buildConfig } from 'payload/config'
+import { postgresAdapter } from '@payloadcms/db-postgres';
+import { webpackBundler } from '@payloadcms/bundler-webpack'; // bundler-import
+import { lexicalEditor } from '@payloadcms/richtext-lexical';
+import { buildConfig } from 'payload/config';
 import { oidcPlugin } from '@fiercecat/payload-plugin-oidc';
-import { cloudStorage } from '@payloadcms/plugin-cloud-storage'
-import { s3Adapter } from '@payloadcms/plugin-cloud-storage/s3'
+import { cloudStorage } from '@payloadcms/plugin-cloud-storage';
+import { s3Adapter } from '@payloadcms/plugin-cloud-storage/s3';
 
-import Users from './collections/Users'
+import Users from './collections/Users';
 // import Posts from './collections/Posts'
 // import StarSystems from './collections/StarSystems'
-import Media from './collections/Media'
-import Events from './collections/Events/Index'
-import EventCategories from './collections/Events/Event-Categories'
-import EventParticipants from './collections/Events/Event-Participants'
-import EventOrganizers from './collections/Events/Event-Organizers'
-import EventContestRecords from './collections/Events/Event-ContestRecords'
-import EventContestScores from './collections/Events/Event-ContestScores'
-import ContentVotes from './collections/Votes/Content-Votes'
-import ContentStats from './collections/Votes/Content-Stats'
+import Media from './collections/Media';
+import Events from './collections/Events/Index';
+import EventCategories from './collections/Events/Event-Categories';
+import EventParticipants from './collections/Events/Event-Participants';
+import EventOrganizers from './collections/Events/Event-Organizers';
+import EventContestRecords from './collections/Events/Event-ContestRecords';
+import EventContestScores from './collections/Events/Event-ContestScores';
+import ContentVotes from './collections/Votes/Content-Votes';
+import ContentStats from './collections/Votes/Content-Stats';
 
 const cloudflareR2 = s3Adapter({
   config: {
@@ -32,7 +32,7 @@ const cloudflareR2 = s3Adapter({
     region: process.env.R2_REGION,
   },
   bucket: process.env.R2_BUCKET,
-})
+});
 
 export default buildConfig({
   admin: {
@@ -42,23 +42,23 @@ export default buildConfig({
       return {
         ...config,
         resolve: {
-            ...config.resolve,
-            alias: {
-                ...config.resolve.alias,
-                // publitio_js_sdk: path.resolve(__dirname, "../mock.js"),
-                // "fs-extra": path.resolve(__dirname, "../mock.js"),
-            },
-            fallback: {
-              ...config.resolve.fallback,
-              fs: false,
-              stream: false,
-              constants: false,
-              assert: false,
-              util: false,
-            },
+          ...config.resolve,
+          alias: {
+            ...config.resolve.alias,
+            // publitio_js_sdk: path.resolve(__dirname, "../mock.js"),
+            // "fs-extra": path.resolve(__dirname, "../mock.js"),
+          },
+          fallback: {
+            ...config.resolve.fallback,
+            fs: false,
+            stream: false,
+            constants: false,
+            assert: false,
+            util: false,
+          },
         },
       };
-  },
+    },
   },
   collections: [
     Users,
@@ -177,4 +177,4 @@ export default buildConfig({
     defParamCharset: 'utf8',
   },
   debug: true,
-})
+});

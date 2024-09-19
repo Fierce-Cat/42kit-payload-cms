@@ -1,4 +1,4 @@
-import { CollectionConfig } from 'payload/types'
+import { CollectionConfig } from 'payload/types';
 
 const ContentStats: CollectionConfig = {
   slug: 'content-stats',
@@ -12,7 +12,7 @@ const ContentStats: CollectionConfig = {
       relationTo: ['events'],
       required: true,
       access: {
-        update: () => { return false }
+        update: () => { return false; }
       }
     },
     {
@@ -68,6 +68,6 @@ const ContentStats: CollectionConfig = {
       },
     }
   ],
-}
+};
 
-export default ContentStats
+export default ContentStats;

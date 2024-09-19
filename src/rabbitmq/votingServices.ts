@@ -22,7 +22,7 @@ export async function upvoteConsumer() {
     },
     async (message) => {
       try {
-        let data = JSON.parse(message.bodyToString());
+        const data = JSON.parse(message.bodyToString());
 
         const { contentId, statId, value } = data;
 

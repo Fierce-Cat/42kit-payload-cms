@@ -1,30 +1,33 @@
-import payload from 'payload'
-import { Forbidden, APIError } from 'payload/errors'
-import type { Access } from 'payload/config'
-import type { CollectionConfig, CollectionAfterChangeHook, CollectionBeforeValidateHook, FieldAccess } from 'payload/types'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import payload from 'payload';
+import { Forbidden, APIError } from 'payload/errors';
+import type { Access } from 'payload/config';
+import type {
+  CollectionConfig,
+  CollectionAfterChangeHook,
+  CollectionBeforeValidateHook,
+  FieldAccess,
+} from 'payload/types';
 
-import { generateId, generateCreatedBy } from '../../utilities/GenerateMeta'
+import { generateCreatedBy } from '../../utilities/GenerateMeta';
 
-import { isUser } from '../../access/isUser'
-import { isAdmin, isAdminFieldLevel } from '../../access/isAdmin'
-import { checkRole } from '../Users/checkRole'
+import { isUser } from '../../access/isUser';
+import { isAdmin } from '../../access/isAdmin';
+import { checkRole } from '../Users/checkRole';
 import { Event, User } from '../../payload-types';
 
 // Count the number of participants in the event
-const ranking: CollectionAfterChangeHook = async ({
-  doc,
-  operation,
-}) => {
-  return doc
-}
+const ranking: CollectionAfterChangeHook = async ({ doc }) => {
+  return doc;
+};
 
 const checkNumSubmissions: CollectionBeforeValidateHook = async ({
   data,
   operation,
   req: { user },
 }) => {
-  if (operation === 'create') {
-    const records = await payload.find({
+  if (operation === 'create' && data) {
+    const records = (await payload.find({
       collection: 'event-contest-records',
       where: {
         event_id: {
@@ -33,54 +36,54 @@ const checkNumSubmissions: CollectionBeforeValidateHook = async ({
         user_id: {
           equals: user.id,
         },
-      }
-    }) as any
+      },
+    })) as any;
 
-    const event = await payload.findByID({
+    const event = (await payload.findByID({
       collection: 'events',
       id: data.event_id,
-    }) as any
+    })) as any;
 
     if (records.totalDocs >= event.num_max_attempts) {
-      throw new APIError('You have reached the maximum number of submissions.', 403)
+      throw new APIError('You have reached the maximum number of submissions.', 403);
     }
 
-    return data
+    return data;
   }
 
-  return data
-}
+  return data;
+};
 
 // Check if the event is published and registration is open
 const checkEventStatus: CollectionBeforeValidateHook = async ({
   data, // incoming data to update or create with
   operation, // 'create' or 'update'
 }) => {
-  if (operation === 'create') {
+  if (operation === 'create' && data) {
     const event = await payload.findByID({
       collection: 'events',
       id: data.event_id,
-    })
+    });
 
     if (event.status !== 'published') {
-      throw new Forbidden
+      throw new Forbidden();
     }
     if (event.date_started > new Date()) {
-      throw new APIError('Event has not started yet.', 403)
+      throw new APIError('Event has not started yet.', 403);
     }
     if (event.date_ended < new Date()) {
-      throw new APIError('Event has ended.', 403)
+      throw new APIError('Event has ended.', 403);
     }
   }
 
-  return data
-}
+  return data;
+};
 
 const isUserParticipated: CollectionBeforeValidateHook = async ({
   data, // incoming data to update or create with'
   operation, // 'create' or 'update'
 }) => {
-  if (operation === 'create') {
+  if (operation === 'create' && data) {
     const participant = await payload.find({
       collection: 'event-participants',
       where: {
@@ -89,29 +92,29 @@ const isUserParticipated: CollectionBeforeValidateHook = async ({
         },
         user_id: {
           equals: data.user_id,
-        }
-      }
-    })
+        },
+      },
+    });
 
     if (participant.totalDocs === 1) {
-      return data
+      return data;
     }
 
-    throw new APIError('User has not register this event yet.', 403)
+    throw new APIError('User has not register this event yet.', 403);
   }
-}
+};
 
 // Check if the posting user_id is the same as the logged in user
 const checkIsCurrentUser: CollectionBeforeValidateHook = async ({
   data, // incoming data to update or create with'
   req: { user },
 }) => {
-  if (data.user_id !== user.id) {
+  if (data && data.user_id !== user.id) {
     // throw new Forbidden
-    throw new APIError('You can only register event for yourself.', 403)
+    throw new APIError('You can only register event for yourself.', 403);
   }
-  return data
-}
+  return data;
+};
 
 const isCreatedBy: Access = ({ req: { user } }) => {
   if (user) {
@@ -126,11 +129,11 @@ const isCreatedBy: Access = ({ req: { user } }) => {
           user_id: {
             equals: user.id,
           },
-        }
-      ]
-    }
+        },
+      ],
+    };
   }
-}
+};
 
 const isEventOrganizer: Access = ({ req: { user } }) => {
   if (user) {
@@ -139,66 +142,67 @@ const isEventOrganizer: Access = ({ req: { user } }) => {
         {
           'event_id.organizing_users': {
             equals: user.id,
-          }
+          },
         },
         {
           'event_id.createdBy': {
             equals: user.id,
-          }
+          },
         },
         {
           'event_id.createdBy.id': {
             equals: user.id,
-          }
-        }
-      ]
-    }
+          },
+        },
+      ],
+    };
   }
-}
+};
 
-const isEventOrganizerOrAdminFieldLevel: FieldAccess<{
-  event_id: any, id: string
-}, unknown, User> = ({
-  req: { user }, id, doc
-}) => {
+const isEventOrganizerOrAdminFieldLevel: FieldAccess<
+  {
+    event_id: any;
+    id: string;
+  },
+  unknown,
+  User
+> = ({ req: { user }, id, doc }) => {
   if (user && doc) {
     if (checkRole(['admin'], user)) {
-      return true
+      return true;
     }
 
-    const eventId: string = typeof doc.event_id === 'object' ? doc.event_id.id : doc.event_id
+    const eventId: string = typeof doc.event_id === 'object' ? doc.event_id.id : doc.event_id;
 
     const event = payload.findByID({
       collection: 'events',
       id: eventId,
       depth: 2,
-    }) as unknown as Event
+    }) as unknown as Event;
 
     if (typeof event.createdBy === 'object' && event.createdBy.id === user.id) {
-      return true
+      return true;
     } else if (typeof event.createdBy === 'string' && event.createdBy === user.id) {
-      return true
+      return true;
     } else if (typeof event.organizing_users === 'object') {
       // if organizing_users is an array of objects
       if (event.organizing_users.some((organizer: any) => organizer.id === user.id)) {
-        return true
+        return true;
       }
 
       // if organizing_users is an array of strings
       if (event.organizing_users.some((organizer: any) => organizer === user.id)) {
-        return true
+        return true;
       }
     }
-    return false
+    return false;
   }
-}
-
+};
 
 const recordReadAccess: Access = ({ req: { user } }) => {
-
   return {
     or: [
-    // all records are public
+      // all records are public
       {
         and: [
           {
@@ -207,11 +211,11 @@ const recordReadAccess: Access = ({ req: { user } }) => {
             },
           },
           {
-            "event_id.is_all_records_public": {
+            'event_id.is_all_records_public': {
               equals: true,
             },
-          }
-        ]
+          },
+        ],
       },
       // only published records are public
       {
@@ -222,15 +226,15 @@ const recordReadAccess: Access = ({ req: { user } }) => {
             },
           },
           {
-            "event_id.is_all_records_public": {
+            'event_id.is_all_records_public': {
               equals: false,
             },
-          }
-        ]
-      }
-    ]
-  }
-}
+          },
+        ],
+      },
+    ],
+  };
+};
 
 const EventContestRecords: CollectionConfig = {
   slug: 'event-contest-records',
@@ -246,38 +250,38 @@ const EventContestRecords: CollectionConfig = {
   },
   access: {
     create: isUser,
-    read: (req) => {
+    read: req => {
       if (isAdmin(req)) {
-        return true
+        return true;
       }
       if (isEventOrganizer(req)) {
-        return true
+        return true;
       }
       if (isCreatedBy(req)) {
-        return true
+        return true;
       }
-      return recordReadAccess(req)
+      return recordReadAccess(req);
     },
-    update: (req) => {
+    update: req => {
       if (isAdmin(req)) {
-        return true
+        return true;
       }
       if (isEventOrganizer(req)) {
-        return true
+        return true;
       }
-      return false
+      return false;
     },
-    delete: (req) => {
+    delete: req => {
       if (isAdmin(req)) {
-        return true
+        return true;
       }
       if (isEventOrganizer(req)) {
-        return true
+        return true;
       }
       if (isCreatedBy(req)) {
-        return true
+        return true;
       }
-      return false
+      return false;
     },
   },
   hooks: {
@@ -498,10 +502,10 @@ const EventContestRecords: CollectionConfig = {
           type: 'relationship',
           relationTo: 'users',
           hasMany: true,
-        }
+        },
       ],
-    }
+    },
   ],
-}
+};
 
-export default EventContestRecords
+export default EventContestRecords;
