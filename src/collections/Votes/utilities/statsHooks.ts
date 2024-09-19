@@ -1,6 +1,6 @@
 import { CollectionBeforeChangeHook } from 'payload/types';
 import { CollectionAfterChangeHook } from 'payload/types';
-import { publishToQueue } from '../../../rabbitmq/publisher';
+import { publishToQueue } from '@/rabbitmq/publisher';
 
 // This hook is used to validate the vote before it is created or updated.
 export const validateVote: CollectionBeforeChangeHook = async ({ operation, data, req }) => {
@@ -40,7 +40,7 @@ export const validateVote: CollectionBeforeChangeHook = async ({ operation, data
           'content.value': {
             equals: cid,
           },
-          'createdBy': {
+          createdBy: {
             equals: createdBy.id ?? createdBy,
           },
           type: {
@@ -52,7 +52,6 @@ export const validateVote: CollectionBeforeChangeHook = async ({ operation, data
       if (vote.totalDocs > 0) {
         throw new Error('Already upvoted');
       }
-
     } else if (type === 'star') {
       // Check if the user has already starred the content
       const vote = await req.payload.find({
@@ -62,7 +61,7 @@ export const validateVote: CollectionBeforeChangeHook = async ({ operation, data
           'content.value': {
             equals: cid,
           },
-          'createdBy': {
+          createdBy: {
             equals: createdBy.id ?? createdBy,
           },
           type: {
@@ -74,7 +73,6 @@ export const validateVote: CollectionBeforeChangeHook = async ({ operation, data
       if (vote.totalDocs > 0) {
         throw new Error('Already starred');
       }
-
     } else {
       throw new Error('Invalid type');
     }
@@ -90,40 +88,45 @@ export const updateStats: CollectionAfterChangeHook = ({ operation, doc, req }) 
   const { type } = doc;
 
   // Find the stats document for the content
-  req.payload.find({
-    req,
-    collection: 'content-stats',
-    where: {
-      'content.value': {
-        equals: cid,
+  req.payload
+    .find({
+      req,
+      collection: 'content-stats',
+      where: {
+        'content.value': {
+          equals: cid,
+        },
       },
-    },
-  }).then(stats => {
-    if (stats.totalDocs === 0) {
-      throw new Error('Stats document not found');
-    }
+    })
+    .then(stats => {
+      if (stats.totalDocs === 0) {
+        throw new Error('Stats document not found');
+      }
 
-    // If the stats document exists, update the stats based on the type of vote
-    const stat = stats.docs[0] as any;
+      // If the stats document exists, update the stats based on the type of vote
+      const stat = stats.docs[0] as any;
 
-    // Check if the vote's type is equal to stat's type
-    if (type !== stat.type) {
-      throw new Error('Type mismatch');
-    }
+      // Check if the vote's type is equal to stat's type
+      if (type !== stat.type) {
+        throw new Error('Type mismatch');
+      }
 
-    if (type === 'upvote') {
-      publishToQueue({
-        contentId: cid,
-        statId: stat.id,
-        voteId: doc.id,
-        value: 1,
-        type: 'upvote',
-      },
-      'upvote-queue');
-    } else if (type === 'star') {
-      // Handle 'star' type if needed
-    }
-  }).catch(error => {
-    console.error(error);
-  });
+      if (type === 'upvote') {
+        publishToQueue(
+          {
+            contentId: cid,
+            statId: stat.id,
+            voteId: doc.id,
+            value: 1,
+            type: 'upvote',
+          },
+          'upvote-queue',
+        );
+      } else if (type === 'star') {
+        // Handle 'star' type if needed
+      }
+    })
+    .catch(error => {
+      console.error(error);
+    });
 };

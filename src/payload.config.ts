@@ -38,12 +38,13 @@ export default buildConfig({
   admin: {
     user: Users.slug,
     bundler: webpackBundler(), // bundler-config
-    webpack: (config) => {
+    webpack: config => {
       return {
         ...config,
         resolve: {
           ...config.resolve,
           alias: {
+            '@': path.resolve(__dirname, './'),
             ...config.resolve.alias,
             // publitio_js_sdk: path.resolve(__dirname, "../mock.js"),
             // "fs-extra": path.resolve(__dirname, "../mock.js"),
@@ -56,6 +57,7 @@ export default buildConfig({
             assert: false,
             util: false,
           },
+          extensions: ['.ts', '.js'],
         },
       };
     },
@@ -74,11 +76,7 @@ export default buildConfig({
     ContentVotes,
     ContentStats,
   ],
-  cors: [
-    '*',
-    'https://local-dev.citizenwiki.cn:3000',
-    'https://42kit.citizenwiki.cn',
-  ],
+  cors: ['*', 'https://local-dev.citizenwiki.cn:3000', 'https://42kit.citizenwiki.cn'],
   localization: {
     locales: [
       {
@@ -126,12 +124,15 @@ export default buildConfig({
       },
       createUserIfNotFound: true,
       async userinfo(accessToken) {
-        const { data: user } = await axios.get(`${process.env.OIDC_URI}/oidc/me
-        `, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
+        const { data: user } = await axios.get(
+          `${process.env.OIDC_URI}/oidc/me
+        `,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
           },
-        });
+        );
 
         // console.log('userinfo', user);
 
@@ -154,9 +155,8 @@ export default buildConfig({
         media: {
           adapter: cloudflareR2,
         },
-      }
+      },
     }),
-
   ],
   rateLimit: {
     window: 120000,
