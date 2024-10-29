@@ -21,6 +21,8 @@ import EventContestRecords from './collections/Events/Event-ContestRecords';
 import EventContestScores from './collections/Events/Event-ContestScores';
 import ContentVotes from './collections/Votes/Content-Votes';
 import ContentStats from './collections/Votes/Content-Stats';
+import CommunityNavs from './collections/CommunityNavs';
+import CommunityNavsTags from './collections/CommunityNavs/CommunityNav-Tags';
 
 const cloudflareR2 = s3Adapter({
   config: {
@@ -73,8 +75,12 @@ export default buildConfig({
     EventContestScores,
     // StarSystems,
     Media,
+    // Votes
     ContentVotes,
     ContentStats,
+    // 社区导航
+    CommunityNavs,
+    CommunityNavsTags,
   ],
   cors: ['*', 'https://local-dev.citizenwiki.cn:3000', 'https://42kit.citizenwiki.cn'],
   localization: {
