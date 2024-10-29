@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload/types';
+import { slugField } from '../../fields/slug';
 
 // Access Control
 import { isAdmin } from '../../access/isAdmin';
@@ -40,16 +41,7 @@ const CommunityNavsTags: CollectionConfig = {
       type: 'text',
       required: true,
     },
-    {
-      name: 'slug',
-      label: {
-        zh: '别名',
-        en: 'Slug',
-      },
-      type: 'text',
-      required: true,
-      unique: true,
-    },
+    slugField(),
   ],
   hooks: {
     beforeChange: [],
