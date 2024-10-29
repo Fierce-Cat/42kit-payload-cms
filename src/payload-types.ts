@@ -32,6 +32,8 @@ export interface Config {
     media: Media;
     'content-votes': ContentVote;
     'content-stats': ContentStat;
+    'community-navs': CommunityNav;
+    'community-nav-tags': CommunityNavTag;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
@@ -342,6 +344,34 @@ export interface ContentVote {
   };
   type: 'upvote' | 'star';
   value: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "community-navs".
+ */
+export interface CommunityNav {
+  id: string;
+  name?: string | null;
+  slug: string;
+  abstract?: string | null;
+  description?: string | null;
+  image: string | Media;
+  link?: string | null;
+  is_sponsored?: boolean | null;
+  tags: (string | CommunityNavTag)[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "community-nav-tags".
+ */
+export interface CommunityNavTag {
+  id: string;
+  name: string;
+  slug: string;
   updatedAt: string;
   createdAt: string;
 }
