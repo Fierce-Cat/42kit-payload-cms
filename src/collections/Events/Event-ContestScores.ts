@@ -120,29 +120,29 @@ const checkEventStatus: CollectionBeforeValidateHook = async ({
   return data;
 };
 
-const isUserParticipated: CollectionBeforeValidateHook = async ({
-  data, // incoming data to update or create with'
-  operation, // 'create' or 'update'
-}) => {
-  if (operation === 'create') {
-    const participant = await payload.find({
-      collection: 'event-participants',
-      where: {
-        event_id: {
-          equals: data.event_id,
-        },
-        user_id: {
-          equals: data.user_id,
-        },
-      },
-    });
+// const isUserParticipated: CollectionBeforeValidateHook = async ({
+//   data, // incoming data to update or create with'
+//   operation, // 'create' or 'update'
+// }) => {
+//   if (operation === 'create') {
+//     const participant = await payload.find({
+//       collection: 'event-participants',
+//       where: {
+//         event_id: {
+//           equals: data.event_id,
+//         },
+//         user_id: {
+//           equals: data.user_id,
+//         },
+//       },
+//     });
 
-    if (participant.totalDocs === 1) {
-      return data;
-    }
-  }
-  throw new APIError('You have not register this event yet.', 403);
-};
+//     if (participant.totalDocs === 1) {
+//       return data;
+//     }
+//   }
+//   throw new APIError('You have not register this event yet.', 403);
+// };
 
 const isEventOrganizer: Access = ({ req: { user } }) => {
   if (user) {
@@ -238,7 +238,7 @@ const EventContestScores: CollectionConfig = {
     },
   },
   hooks: {
-    beforeValidate: [checkEventStatus, checkExistRecord, isUserParticipated],
+    beforeValidate: [checkEventStatus, checkExistRecord],
     beforeChange: [generateCreatedBy],
     afterChange: [updateRecordScore],
   },
