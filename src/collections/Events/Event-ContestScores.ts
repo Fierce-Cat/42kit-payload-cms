@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import payload from 'payload';
 import { Forbidden, APIError } from 'payload/errors';
 import type { Access } from 'payload/config';
@@ -5,11 +6,13 @@ import type {
   CollectionConfig,
   CollectionBeforeValidateHook,
   CollectionAfterChangeHook,
+  FieldAccess,
 } from 'payload/types';
 
 import { generateCreatedBy } from '../../utilities/GenerateMeta';
-
+import { checkRole } from '../Users/checkRole';
 import { isAdmin } from '../../access/isAdmin';
+import { Event, User } from '../../payload-types';
 
 const checkExistRecord: CollectionBeforeValidateHook = async ({
   data,
@@ -179,6 +182,34 @@ const isCreatedBy: Access = ({ req: { user } }) => {
   };
 };
 
+const isCreatedByFieldLevel: FieldAccess<
+  {
+    event_id: any;
+    id: string;
+  },
+  unknown,
+  User
+> = ({ req: { user }, doc }) => {
+  if (user && doc) {
+
+    const eventId: string = typeof doc.event_id === 'object' ? doc.event_id.id : doc.event_id;
+
+    const event = payload.findByID({
+      collection: 'events',
+      id: eventId,
+      depth: 2,
+    }) as unknown as Event;
+
+    if (typeof event.createdBy === 'object' && event.createdBy.id === user.id) {
+      return true;
+    } else if (typeof event.createdBy === 'string' && event.createdBy === user.id) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+};
+
 const EventContestScores: CollectionConfig = {
   slug: 'event-contest-scores',
   labels: {
@@ -290,6 +321,9 @@ const EventContestScores: CollectionConfig = {
           },
           type: 'number',
           required: true,
+          access: {
+            read: isCreatedByFieldLevel,
+          },
         },
         {
           name: 'score_schema',
@@ -298,6 +332,9 @@ const EventContestScores: CollectionConfig = {
             en: 'Score Schema',
           },
           type: 'array',
+          access: {
+            read: isCreatedByFieldLevel,
+          },
           fields: [
             {
               name: 'name',
