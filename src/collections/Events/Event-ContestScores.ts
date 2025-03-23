@@ -58,7 +58,7 @@ const updateRecordScore: CollectionAfterChangeHook = async ({ doc, operation, re
       req,
       collection: 'event-contest-records',
       id: record_id,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     })) as any;
 
     const scores = await req.payload.find({
@@ -72,7 +72,7 @@ const updateRecordScore: CollectionAfterChangeHook = async ({ doc, operation, re
     });
 
     let total = 0;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     scores.docs.forEach((score: any) => {
       total += score.score_info.total;
     });
@@ -182,41 +182,39 @@ const isCreatedBy: Access = ({ req: { user } }) => {
   };
 };
 
-const isCreatedByFieldLevel: FieldAccess<
-  {
-    event_id: any;
-    id: string;
-  },
-  unknown,
-  User
-  > = async ({ req: { user }, doc }) => {
-    if (!doc) {
+const isCreatedByFieldLevel: FieldAccess<any, unknown, User> = async ({ req: { user }, doc }) => {
+  if (!doc) {
+    return true;
+  }
+
+  if (user && doc) {
+    // If user is the creator of the score
+    const createdBy = typeof doc.createdBy === 'object' ? doc.createdBy.id : doc.createdBy;
+    if (createdBy === user.id) {
       return true;
     }
 
-    if (user && doc) {
+    const eventId: string = typeof doc.event_id === 'object' ? doc.event_id.id : doc.event_id;
 
-      const eventId: string = typeof doc.event_id === 'object' ? doc.event_id.id : doc.event_id;
+    const event = await payload.findByID({
+      collection: 'events',
+      id: eventId,
+      depth: 2,
+    }) as unknown as Event;
 
-      const event = await payload.findByID({
-        collection: 'events',
-        id: eventId,
-        depth: 2,
-      }) as unknown as Event;
-
-      if (!event) {
-        return false;
-      }
-
-      if (typeof event.createdBy === 'object' && event.createdBy.id === user.id) {
-        return true;
-      } else if (typeof event.createdBy === 'string' && event.createdBy === user.id) {
-        return true;
-      } else {
-        return false;
-      }
+    if (!event) {
+      return false;
     }
-  };
+
+    if (typeof event.createdBy === 'object' && event.createdBy.id === user.id) {
+      return true;
+    } else if (typeof event.createdBy === 'string' && event.createdBy === user.id) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+};
 
 const EventContestScores: CollectionConfig = {
   slug: 'event-contest-scores',
