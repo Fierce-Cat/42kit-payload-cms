@@ -1,3 +1,75 @@
 {
-    "nuxt.isNuxtApp": false
+  "nuxt.isNuxtApp": false,
+  "workbench.editor.enablePreview": false, //打开文件不覆盖
+  "search.followSymlinks": false, //关闭rg.exe进程
+  "files.autoSave": "onWindowChange", // 切换窗口时自动保存。
+  "editor.lineNumbers": "on", //开启行数提示
+  "editor.quickSuggestions": {
+    //开启自动显示建议
+    "other": true,
+    "comments": true,
+    "strings": true
+  },
+  "editor.tabSize": 2, //制表符符号eslint
+  // "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+  },
+  "editor.inlineSuggest.enabled": true,
+  // "javascript.format.insertSpaceBeforeFunctionParenthesis": true, //让函数(名)和后面的括号之间加个空格
+  "eslint.format.enable": true, // eslint格式化开启
+  "eslint.validate": [
+    // eslint校验的文件列表
+    "vue",
+    "html",
+    "javascript",
+    "typescript",
+    "javascriptreact",
+    "typescriptreact",
+    "less",
+  ],
+  // 默认LF
+  "files.eol": "\n",
+  "i18n-ally.localesPaths": [
+    "locales"
+  ],
+  "i18n-ally.sourceLanguage": "zh-CN",
+  "i18n-ally.keystyle": "flat",
+  // Parser options for extracting HTML, see https://github.com/lokalise/i18n-ally/blob/master/src/extraction/parsers/options.ts
+  "i18n-ally.extract.parsers.html": {
+    "attributes": ["text", "title", "alt", "placeholder", "label", "aria-label"],
+    "ignoredTags": ["script", "style"],
+    "vBind": true,
+    "inlineText": true
+  },
+
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "stylelint.validate": ["css", "scss"],
+
+  // Enables hard-coded strings detection automatically whenever opening supported a file
+  "i18n-ally.extract.autoDetect": false,
+
+  // Make sure that particular refactoring templates would be picked up be the bulk extraction depending on the context
+  "i18n-ally.refactor.templates": [
+  {
+    // affect scope (optional)
+    // see https://github.com/lokalise/i18n-ally/blob/master/src/core/types.ts#L156-L156
+    "source": "html-attribute",
+    "templates": [
+      "i18n.t('{key}'{args})",
+      "custom.t('{key}'{args})",
+    ],
+    // accept globs, resolved to project root (optional)
+    "include": [
+      "src/**/*.{vue,ts,js}",
+      "index.html"
+    ],
+    "exclude": [
+      "src/config/**"
+    ]
+  },
+  ]
+
 }
