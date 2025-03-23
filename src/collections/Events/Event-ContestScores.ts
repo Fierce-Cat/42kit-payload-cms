@@ -10,7 +10,7 @@ import type {
 } from 'payload/types';
 
 import { generateCreatedBy } from '../../utilities/GenerateMeta';
-import { checkRole } from '../Users/checkRole';
+// import { checkRole } from '../Users/checkRole';
 import { isAdmin } from '../../access/isAdmin';
 import { Event, User } from '../../payload-types';
 
@@ -84,7 +84,7 @@ const updateRecordScore: CollectionAfterChangeHook = async ({ doc, operation, re
       }
     }
 
-    scoredBy.push(doc.createdBy.id);
+    scoredBy.push(doc.createdBy.id ? doc.createdBy.id : doc.createdBy);
 
     record.score = total;
     await req.payload.update({
@@ -189,26 +189,34 @@ const isCreatedByFieldLevel: FieldAccess<
   },
   unknown,
   User
-> = ({ req: { user }, doc }) => {
-  if (user && doc) {
-
-    const eventId: string = typeof doc.event_id === 'object' ? doc.event_id.id : doc.event_id;
-
-    const event = payload.findByID({
-      collection: 'events',
-      id: eventId,
-      depth: 2,
-    }) as unknown as Event;
-
-    if (typeof event.createdBy === 'object' && event.createdBy.id === user.id) {
+  > = async ({ req: { user }, doc }) => {
+    if (!doc) {
       return true;
-    } else if (typeof event.createdBy === 'string' && event.createdBy === user.id) {
-      return true;
-    } else {
-      return false;
     }
-  }
-};
+
+    if (user && doc) {
+
+      const eventId: string = typeof doc.event_id === 'object' ? doc.event_id.id : doc.event_id;
+
+      const event = await payload.findByID({
+        collection: 'events',
+        id: eventId,
+        depth: 2,
+      }) as unknown as Event;
+
+      if (!event) {
+        return false;
+      }
+
+      if (typeof event.createdBy === 'object' && event.createdBy.id === user.id) {
+        return true;
+      } else if (typeof event.createdBy === 'string' && event.createdBy === user.id) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  };
 
 const EventContestScores: CollectionConfig = {
   slug: 'event-contest-scores',
