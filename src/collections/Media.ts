@@ -56,6 +56,12 @@ const Media: CollectionConfig = {
       {
         name: 'thumbnail',
         width: 300,
+        height: 200,
+        position: 'centre',
+      },
+      {
+        name: 'preload',
+        width: 300,
         height: undefined,
         position: 'centre',
       },
