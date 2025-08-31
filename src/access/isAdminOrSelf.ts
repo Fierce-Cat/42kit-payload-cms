@@ -1,9 +1,9 @@
 import type { Access } from 'payload/config';
 import type { FieldAccess } from 'payload/types';
 
-import type { User } from '../payload-types';
+import type { User } from '@/payload-types';
 
-import { checkRole } from '../collections/Users/checkRole';
+import { checkRole } from '@/collections/Users/checkRole';
 
 export const isAdminOrSelf: Access = ({ req: { user } }) => {
   // Need to be logged in

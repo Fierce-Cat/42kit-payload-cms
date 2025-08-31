@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload/types';
 
 // Access Control
-import { isAdmin } from '../../access/isAdmin';
+import { isAdmin } from '@/access/isAdmin';
 
 const EventCategories: CollectionConfig = {
   slug: 'event-categories',

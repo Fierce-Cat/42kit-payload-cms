@@ -1,5 +1,5 @@
 import { CollectionConfig } from 'payload/types';
-import { slugField } from '../../fields/slug';
+import { slugField } from '@/fields/slug';
 
 const StarSystems: CollectionConfig = {
   slug: 'star-systems',
@@ -20,7 +20,7 @@ const StarSystems: CollectionConfig = {
     {
       name: 'name', // 星系名称
       required: true,
-      type: 'text', 
+      type: 'text',
       localized: true,
       label: {
         zh: '名称',
@@ -33,7 +33,7 @@ const StarSystems: CollectionConfig = {
       hasMany: false,
       admin: {
         isClearable: true,
-        isSortable: true, 
+        isSortable: true,
       },
       options: [
         {

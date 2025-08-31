@@ -1,8 +1,8 @@
 import { CollectionBeforeChangeHook } from 'payload/types';
 import { CollectionAfterChangeHook } from 'payload/types';
-import { publishToQueue } from '../../../rabbitmq/publisher';
+import { publishToQueue } from '@/rabbitmq/publisher';
 
-import type { ContentStat } from '../../../payload-types';
+import type { ContentStat } from '@/payload-types';
 
 // This hook is used to validate the vote before it is created or updated.
 export const validateVote: CollectionBeforeChangeHook = async ({ operation, data, req }) => {

@@ -7,10 +7,10 @@ import type {
   CollectionBeforeValidateHook,
 } from 'payload/types';
 
-import { generateCreatedBy } from '../../utilities/GenerateMeta';
+import { generateCreatedBy } from '@/utilities/GenerateMeta';
 
-import { isUser } from '../../access/isUser';
-import { isAdmin } from '../../access/isAdmin';
+import { isUser } from '@/access/isUser';
+import { isAdmin } from '@/access/isAdmin';
 
 // Count the number of participants in the event
 const countParticipants: CollectionAfterChangeHook = async ({ doc, operation, req }) => {

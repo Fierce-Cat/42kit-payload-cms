@@ -6,9 +6,9 @@ import type {
 } from 'payload/types';
 import { APIError } from 'payload/errors';
 import type { Access } from 'payload/config';
-import type { Event } from '../../payload-types';
+import type { Event } from '@/payload-types';
 
-import { isAdmin } from '../../access/isAdmin';
+import { isAdmin } from '@/access/isAdmin';
 
 const addEventOrganizer: CollectionAfterChangeHook = async ({ doc, operation, req }) => {
   if (operation !== 'create') {

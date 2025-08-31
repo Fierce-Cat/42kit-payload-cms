@@ -4,10 +4,10 @@ import type { CollectionBeforeChangeHook, CollectionBeforeDeleteHook, Collection
 import { sql } from 'drizzle-orm';
 import payload from 'payload';
 
-import type { Media } from '../../payload-types';
+import type { Media } from '@/payload-types';
 
-import { isAdmin, isAdminFieldLevel } from '../../access/isAdmin';
-import { isAdminOrSelf, isAdminOrSelfFieldLevel } from '../../access/isAdminOrSelf';
+import { isAdmin, isAdminFieldLevel } from '@/access/isAdmin';
+import { isAdminOrSelf, isAdminOrSelfFieldLevel } from '@/access/isAdminOrSelf';
 import { getLogtoUsernameAvaliable } from './functions/logtoHelpers';
 import { checkUsername } from './hooks/checkUsername';
 import { syncLogtoUser } from './hooks/syncLogtoUser';

@@ -1,8 +1,8 @@
 import type { Access, FieldAccess } from 'payload/types';
 
-import type { User } from '../payload-types';
+import type { User } from '@/payload-types';
 
-import { checkRole } from '../collections/Users/checkRole';
+import { checkRole } from '@/collections/Users/checkRole';
 
 export const isAdmin: Access<
   any, // eslint-disable-line @typescript-eslint/no-explicit-any

@@ -1,11 +1,11 @@
 import payload from 'payload';
 import type { CollectionConfig, CollectionAfterChangeHook } from 'payload/types';
 import type { Access } from 'payload/config';
-import { generateCreatedBy, generateRandomSlug } from '../../utilities/GenerateMeta';
+import { generateCreatedBy, generateRandomSlug } from '@/utilities/GenerateMeta';
 
 // Access Control
-import { isAdmin, isAdminFieldLevel } from '../../access/isAdmin';
-import { isUser } from '../../access/isUser';
+import { isAdmin, isAdminFieldLevel } from '@/access/isAdmin';
+import { isUser } from '@/access/isUser';
 
 const isEventOrganizer: Access = ({ req: { user } }) => {
   if (user) {

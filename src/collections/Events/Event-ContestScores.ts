@@ -9,10 +9,10 @@ import type {
   FieldAccess,
 } from 'payload/types';
 
-import { generateCreatedBy } from '../../utilities/GenerateMeta';
-// import { checkRole } from '../Users/checkRole';
-import { isAdmin } from '../../access/isAdmin';
-import { Event, User } from '../../payload-types';
+import { generateCreatedBy } from '@/utilities/GenerateMeta';
+// import { checkRole } from '@/Users/checkRole';
+import { isAdmin } from '@/access/isAdmin';
+import { Event, User } from '@/payload-types';
 
 const checkExistRecord: CollectionBeforeValidateHook = async ({
   data,

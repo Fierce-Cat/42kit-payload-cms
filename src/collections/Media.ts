@@ -2,11 +2,11 @@ import { CollectionConfig, CollectionBeforeOperationHook } from 'payload/types';
 import type { Access } from 'payload/config';
 
 // Utilities
-import { generateCreatedBy } from '../utilities/GenerateMeta';
+import { generateCreatedBy } from '@/utilities/GenerateMeta';
 
 // Access Control
-import { isAdmin, isAdminFieldLevel } from '../access/isAdmin';
-import { isUser } from '../access/isUser';
+import { isAdmin, isAdminFieldLevel } from '@/access/isAdmin';
+import { isUser } from '@/access/isUser';
 
 const isCreator: Access = ({ req: { user } }) => {
   if (!user) return false;

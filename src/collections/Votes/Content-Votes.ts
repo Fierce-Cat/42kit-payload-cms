@@ -1,5 +1,5 @@
 import { CollectionConfig } from 'payload/types';
-import { generateCreatedBy } from '../../utilities/GenerateMeta';
+import { generateCreatedBy } from '@/utilities/GenerateMeta';
 import { updateStats, validateVote } from './utilities/statsHooks';
 
 const ContentVotes: CollectionConfig = {

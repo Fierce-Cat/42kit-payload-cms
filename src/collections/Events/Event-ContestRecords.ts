@@ -9,12 +9,12 @@ import type {
   FieldAccess,
 } from 'payload/types';
 
-import { generateCreatedBy } from '../../utilities/GenerateMeta';
+import { generateCreatedBy } from '@/utilities/GenerateMeta';
 
-import { isUser } from '../../access/isUser';
-import { isAdmin } from '../../access/isAdmin';
-import { checkRole } from '../Users/checkRole';
-import { Event, User } from '../../payload-types';
+import { isUser } from '@/access/isUser';
+import { isAdmin } from '@/access/isAdmin';
+import { checkRole } from '@/collections/Users/checkRole';
+import { Event, User } from '@/payload-types';
 
 // Count the number of participants in the event
 const ranking: CollectionAfterChangeHook = async ({ doc }) => {

@@ -1,8 +1,8 @@
 import type { CollectionConfig } from 'payload/types';
-import { slugField } from '../../fields/slug';
+import { slugField } from '@/fields/slug';
 
 // Access Control
-import { isAdmin } from '../../access/isAdmin';
+import { isAdmin } from '@/access/isAdmin';
 
 const CommunityNavsTags: CollectionConfig = {
   slug: 'community-nav-tags',
