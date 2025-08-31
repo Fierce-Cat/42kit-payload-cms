@@ -6,3 +6,5 @@ node_modules
 .env
 package-lock.json
 tsconfig.tsbuildinfo
+local-dev.citizenwiki.cn-key.pem
+local-dev.citizenwiki.cn.pem
