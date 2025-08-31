@@ -1,5 +1,5 @@
 import axios from 'axios';
- 
+
 export async function getLogtoApiToken() {
   // use basic authentication with client_id and client_secret to get access token
   const clientId = process.env.LOGTO_API_CLIENT_ID;
@@ -66,10 +66,9 @@ export async function getLogtoUsernameAvaliable(username: string): Promise<boole
   }
 
   const searchQuery = new URLSearchParams([['search.username', username]]);
-   
-  const { data } = await axios
-     
-    .get(`${process.env.OIDC_URI}/api/users/?${searchQuery}`, {
+
+  const { data } = await axios.get(
+    `${process.env.OIDC_URI}/api/users/?${searchQuery}`, {
       headers: {
         Authorization: `Bearer ${token.access_token}`,
         'Content-Type': 'application/json',

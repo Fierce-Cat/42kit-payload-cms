@@ -28,8 +28,13 @@ const start = async () => {
   await upvoteConsumer();
 
   if (process.env.LOCAL_HTTPS === 'true') {
-    const key = fs.readFileSync('./local-dev.citizenwiki.cn-key.pem'); // Path to your SSL key
-    const cert = fs.readFileSync('./local-dev.citizenwiki.cn.pem'); // Path to your SSL certificate
+    const keyPath = process.env.SSL_KEY_PATH;
+    const certPath = process.env.SSL_CERT_PATH;
+    if (!keyPath || !certPath) {
+      throw new Error('SSL_KEY_PATH and SSL_CERT_PATH environment variables must be set for HTTPS.');
+    }
+    const key = fs.readFileSync(keyPath); // Path to your SSL key
+    const cert = fs.readFileSync(certPath); // Path to your SSL certificate
 
     // Create HTTPS server
     const server = https.createServer({ key, cert }, app);

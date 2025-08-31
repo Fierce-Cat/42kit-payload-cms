@@ -10,8 +10,6 @@ import { cloudStorage } from '@payloadcms/plugin-cloud-storage';
 import { s3Adapter } from '@payloadcms/plugin-cloud-storage/s3';
 
 import Users from './collections/Users';
-// import Posts from './collections/Posts'
-// import StarSystems from './collections/StarSystems'
 import Media from './collections/Media';
 import Events from './collections/Events/Index';
 import EventCategories from './collections/Events/Event-Categories';

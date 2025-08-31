@@ -1,4 +1,5 @@
 import { CollectionBeforeChangeHook } from 'payload/types';
+import { randomBytes } from 'crypto';
 
 export const generateId: CollectionBeforeChangeHook = async ({ operation, data }) => {
   if (operation === 'create') {
@@ -13,7 +14,7 @@ export const generateId: CollectionBeforeChangeHook = async ({ operation, data }
 
 export const generateCreatedBy: CollectionBeforeChangeHook = async ({ req, operation, data }) => {
   if (operation === 'create') {
-    if (!data.createdBy) {
+    if (!data.createdBy && req.user && req.user.id) {
       data.createdBy = req.user.id;
     }
   }
@@ -22,10 +23,8 @@ export const generateCreatedBy: CollectionBeforeChangeHook = async ({ req, opera
 
 export const generateRandomSlug: CollectionBeforeChangeHook = async ({ operation, data }) => {
   if (operation === 'create') {
-    if (!data.slug) {
-      // Generate a random slug by using the random() function, 8 characters long
-      data.slug = Math.random().toString(36).substring(2, 10).padEnd(8, '0');
-    }
+    // Generate a random slug by using the random() function, 8 characters long
+    data.slug = randomBytes(6).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 8);
   }
   return data;
 };

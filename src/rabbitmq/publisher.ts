@@ -1,7 +1,7 @@
 import { AMQPClient } from '@cloudamqp/amqp-client';
 
 const amqpUrl =
-  'amqp://BdejSsThKMwH69R9BmBUGjtJeLuKHYzH:cCS4Twv3YfxQl5OX@rabbitmq-42kit.olisar.space:5672';
+  process.env.AMQP_URL || 'amqp://user:password@localhost:5672';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function publishToQueue(message: any, queueName: string) {
