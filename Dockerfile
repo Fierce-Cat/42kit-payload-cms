@@ -1,4 +1,4 @@
-FROM node:18.8-alpine as base
+FROM node:20.10-alpine as base
 
 FROM base as builder
 
@@ -6,8 +6,10 @@ WORKDIR /home/node/app
 COPY package*.json ./
 
 COPY . .
-RUN npm install
-RUN npm run build
+RUN yarn install
+RUN yarn build
+
+RUN yarn payload migrate
 
 FROM base as runtime
 
@@ -16,9 +18,9 @@ ENV PAYLOAD_CONFIG_PATH=dist/payload.config.js
 
 WORKDIR /home/node/app
 COPY package*.json  ./
-COPY package-lock.json ./
+COPY yarn.lock ./
 
-RUN npm install --production
+RUN yarn install --production
 COPY --from=builder /home/node/app/dist ./dist
 COPY --from=builder /home/node/app/build ./build
 
