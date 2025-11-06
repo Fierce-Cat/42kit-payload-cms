@@ -2266,6 +2266,7 @@ type event_register_questions {
   question: String
   type: event_register_questions_type
   required: Boolean
+  answer: String
 }
 
 enum event_register_questions_type {
@@ -20876,6 +20877,7 @@ enum Event_status_MutationInput {
 input mutationEvent_Register_questionsInput {
   id: String
   question: String!
+  answer: String
   type: Event_Register_questions_type_MutationInput!
   required: Boolean
 }
