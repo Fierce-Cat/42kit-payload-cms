@@ -21,6 +21,8 @@ import ContentVotes from './collections/Votes/Content-Votes';
 import ContentStats from './collections/Votes/Content-Stats';
 import CommunityNavs from './collections/CommunityNavs';
 import CommunityNavsTags from './collections/CommunityNavs/CommunityNav-Tags';
+import Pages from './collections/UDB/Pages';
+import PageCategories from './collections/UDB/Pages/Page-Categories';
 
 const cloudflareR2 = s3Adapter({
   config: {
@@ -46,8 +48,8 @@ export default buildConfig({
           alias: {
             '@': path.resolve(__dirname, './'),
             ...config.resolve.alias,
-            // publitio_js_sdk: path.resolve(__dirname, "../mock.js"),
-            // "fs-extra": path.resolve(__dirname, "../mock.js"),
+            // publitio_js_sdk: path.resolve(__dirname, "@/mock.js"),
+            // "fs-extra": path.resolve(__dirname, "@/mock.js"),
           },
           fallback: {
             ...config.resolve.fallback,
@@ -79,6 +81,9 @@ export default buildConfig({
     // 社区导航
     CommunityNavs,
     CommunityNavsTags,
+    // 主内容页面
+    Pages,
+    PageCategories,
   ],
   cors: ['*', 'https://local-dev.citizenwiki.cn:3000', 'https://42kit.citizenwiki.cn'],
   localization: {
